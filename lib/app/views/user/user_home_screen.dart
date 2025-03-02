@@ -9,15 +9,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trippygo/app/views/user/user_attraction_detail_screen.dart';
 import 'package:trippygo/app/views/user/user_hotel_detail_screen.dart';
+import 'package:trippygo/app/views/user/user_view_all_attraction_screen.dart';
+import 'package:trippygo/app/views/user/user_view_all_hotel_screen.dart';
 import '../../config/app_colors.dart';
 import '../../config/app_sized_box.dart';
 import '../../controllers/user/bottom_navigation_controller.dart';
-import '../../controllers/user/user_attractions_favrouite_controller.dart';
+import '../../controllers/user/user_attraction_favrouite_controller.dart';
+import '../../controllers/user/user_hotel_favrouite_controller.dart';
 import '../../controllers/user/user_home_screen_controller.dart';
 import '../../widgets/custom_drawer.dart';
 import '../../widgets/custom_text.dart';
@@ -31,7 +35,6 @@ class UserHomeScreen extends StatelessWidget {
   final UserHomeScreenController controller = Get.put(UserHomeScreenController());
   final TextEditingController searchController = TextEditingController(); // FIXED: Defined controller
   final BottomNavigationController bottomNavController = Get.put(BottomNavigationController());
-  final UserAttractionsFavoritesController favoritesController = Get.put(UserAttractionsFavoritesController());
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +102,7 @@ class UserHomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: SingleChildScrollView(
+            body:SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 15.w),
                 child: Column(
@@ -139,8 +142,6 @@ class UserHomeScreen extends StatelessWidget {
                             fit: BoxFit.cover,
                           ),
                         ),
-
-                        // Shadow Overlay with Border Radius
                         Container(
                           width: double.infinity,
                           height: 150.h,
@@ -156,8 +157,6 @@ class UserHomeScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-
-                        // Positioned Text & Divider
                         Positioned(
                           bottom: 30.h,
                           left: 10.w,
@@ -196,7 +195,7 @@ class UserHomeScreen extends StatelessWidget {
                       children: [
                         CustomText(
                           fontSize: 16.sp,
-                          title: "The most relevent",
+                          title: "The most relevant",
                           fontFamily: 'grenda',
                         ),
                         CustomText(
@@ -208,12 +207,12 @@ class UserHomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    AppSizedBox.space10h,
+                    AppSizedBox.space15h,
                     StreamBuilder(
                       stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
                       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator()); // Simple Loader
+                          return _buildShimmerEffect();  // Show shimmer effect while loading
                         }
 
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -229,7 +228,7 @@ class UserHomeScreen extends StatelessWidget {
                         var limitedHotels = hotels.take(3).toList();
 
                         return SizedBox(
-                          height: 210.h, // ✅ Set a constrained height
+                          height: 210.h,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: limitedHotels.length,
@@ -237,12 +236,13 @@ class UserHomeScreen extends StatelessWidget {
                               var hotel = limitedHotels[index];
                               return GestureDetector(
                                 onTap: () {
-                                  // Navigate to the HotelDetailScreen and pass the hotel data
+                                  print(hotel.id);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => UserHotelDetailScreen(
-                                        hotel: hotel.data() as Map<String, dynamic>, // Pass the selected hotel's data
+                                        hotel: hotel.data() as Map<String, dynamic>,
+                                        hotelID: hotel.id.toString(),
                                       ),
                                     ),
                                   );
@@ -250,7 +250,8 @@ class UserHomeScreen extends StatelessWidget {
                                 child: Padding(
                                   padding: EdgeInsets.only(right: 10.w),
                                   child: Container(
-                                    width: 250.w, // ✅ Ensures width is constrained
+                                    height: 210.h,
+                                    width: 250.w,
                                     decoration: BoxDecoration(
                                       color: AppColors.white,
                                       borderRadius: BorderRadius.circular(15.r),
@@ -277,20 +278,19 @@ class UserHomeScreen extends StatelessWidget {
                                                 right: 10.w,
                                                 child: GestureDetector(
                                                   onTap: () {
-                                                    favoritesController.toggleFavorite(hotel.data() as Map<String, dynamic>); // ✅ Ensure correct type
                                                   },
-                                                  child: Obx(() => Container(
+                                                  child: Container(
                                                     padding: EdgeInsets.all(5.w),
                                                     decoration: BoxDecoration(
                                                       color: Colors.black.withOpacity(0.5),
                                                       shape: BoxShape.circle,
                                                     ),
                                                     child: Icon(
-                                                      favoritesController.isFavorite(hotel['name']) ? Icons.favorite : Icons.favorite_border,
-                                                      color: favoritesController.isFavorite(hotel['name']) ? Colors.red : Colors.white,
+                                                      Icons.favorite ,
+                                                      color: AppColors.redDark ,
                                                       size: 20.sp,
                                                     ),
-                                                  )),
+                                                  )
                                                 ),
                                               ),
                                             ],
@@ -342,11 +342,9 @@ class UserHomeScreen extends StatelessWidget {
                                   ),
                                 ),
                               );
-
                             },
                           ),
                         );
-
                       },
                     ),
                     AppSizedBox.space10h,
@@ -374,7 +372,7 @@ class UserHomeScreen extends StatelessWidget {
                         stream: FirebaseFirestore.instance.collection('attractions').snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
+                            return _buildShimmerEffect();  // Show shimmer effect while loading
                           }
 
                           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -388,7 +386,6 @@ class UserHomeScreen extends StatelessWidget {
                             );
                           }
 
-                          // Extract documents from snapshot
                           var attractions = snapshot.data!.docs;
 
                           return ListView.builder(
@@ -396,106 +393,142 @@ class UserHomeScreen extends StatelessWidget {
                             itemCount: attractions.length,
                             itemBuilder: (context, index) {
                               var attraction = attractions[index];
-                              return _buildAttractionCard(attraction);
+                              return AttractionCard(attraction: attraction);
                             },
                           );
                         },
                       ),
                     ),
-
                   ],
                 ),
               ),
-            ),
-          ),
+            )),
         );
       },
     );
   }
 }
 
-Widget _buildAttractionCard(QueryDocumentSnapshot attraction) {
-  Map<String, dynamic> data = attraction.data() as Map<String, dynamic>? ?? {};
-
-  String spotName = data['spot_name'] ?? "Unknown";
-  String category = data['category'] ?? "Uncategorized";
-
-  String imagePath = category.toLowerCase() == "museum"
-      ? "assets/images/museum.png"
-      : "assets/images/attraction.jpg";
-
-  return GestureDetector(
-    onTap: () {
-      Get.to(() => UserAttractionDetailScreen(attraction: attraction));
-    },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: EdgeInsets.only(right: 10.w),
-          width: 150.w,
-          height: 150.w,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10.r)),
-            image: DecorationImage(
-              image: AssetImage(imagePath), // 🖼 Dynamic Image
-              fit: BoxFit.cover,
+Widget _buildShimmerEffect() {
+  return Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      height: 150.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(right: 10.w),
+            child: Container(
+              width: 250.w,
+              height: 210.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15.r),
+              ),
             ),
-          ),
-          child: Stack(
-            children: [
-              // Gradient Overlay
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10.r)),
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      AppColors.black.withOpacity(0.8),
-                      AppColors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-
-              // Category (Top Right)
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: CustomText(
-                    title: category,
-                    fontSize: 12.sp,
-                    textColor: AppColors.white,
-                    fontWeight: FontWeight.bold,
-                    capitalize: true,
-                  ),
-                ),
-              ),
-
-              // Attraction Name (Bottom Left)
-              Positioned(
-                bottom: 10,
-                left: 10,
-                child: CustomText(
-                  title: spotName,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.bold,
-                  textColor: AppColors.white,
-                  fontFamily: 'quicksand',
-                  capitalize: true,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     ),
   );
+}
+
+
+
+class AttractionCard extends StatelessWidget {
+  final QueryDocumentSnapshot attraction;
+
+  AttractionCard({required this.attraction});
+
+  @override
+  Widget build(BuildContext context) {
+    Map<String, dynamic> data = attraction.data() as Map<String, dynamic>;
+    String spotName = data['spot_name'] ?? "Unknown";
+    String category = data['category'] ?? "Uncategorized";
+    String imagePath = category.toLowerCase() == "museum"
+        ? "assets/images/museum.png"
+        : "assets/images/attraction.jpg";
+
+
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => UserAttractionDetailScreen(attraction: attraction));
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: EdgeInsets.only(right: 10.w),
+            width: 150.w,
+            height: 150.w,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10.r)),
+              image: DecorationImage(
+                image: AssetImage(imagePath), // 🖼 Dynamic Image
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Gradient Overlay
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(10.r)),
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.8),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  bottom: 10,
+                  left: 10,
+                  child: Text(
+                    spotName,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'quicksand',
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: () {
+
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(5.h),
+                        child: Icon(
+                           Icons.favorite,
+                          color:AppColors.redDark,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

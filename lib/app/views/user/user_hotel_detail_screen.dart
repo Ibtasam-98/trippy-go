@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:trippygo/app/config/app_colors.dart';
 import 'package:trippygo/app/config/app_sized_box.dart';
 import 'package:get/get.dart';
+import 'package:trippygo/app/views/user/user_add_hotel_review_screen.dart';
 import '../../widgets/custom_text.dart';
 import '../../widgets/custom_button.dart'; // Assuming CustomButton is already defined
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserHotelDetailScreen extends StatelessWidget {
   final Map<String, dynamic> hotel;
+  final String hotelID;
 
-  // Constructor to receive the hotel data
-  UserHotelDetailScreen({required this.hotel});
+  UserHotelDetailScreen({required this.hotel, required this.hotelID});
 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic> amenities = hotel['amenities'] ?? {}; // Amenities data
-    List<dynamic> reviews = hotel['reviews'] ?? []; // Reviews data
-
     // ValueNotifier to track the expanded state for each section
     ValueNotifier<bool> descriptionExpanded = ValueNotifier(false);
     ValueNotifier<bool> amenitiesExpanded = ValueNotifier(false);
@@ -59,18 +60,6 @@ class UserHotelDetailScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                Positioned(
-                  top: 30.h,
-                  right: 20.w,
-                  child: IconButton(
-                    icon: Icon(
-                      FontAwesomeIcons.heart,
-                      color: AppColors.white,
-                      size: 20.sp,
-                    ),
-                    onPressed: () {},
-                  ),
-                ),
               ],
             ),
 
@@ -80,7 +69,6 @@ class UserHotelDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Hotel Name & Category
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,13 +120,12 @@ class UserHotelDetailScreen extends StatelessWidget {
                     expansionNotifier: descriptionExpanded,
                   ),
 
-                  // Amenities Section
                   _buildExpansionTile(
                     title: "Amenities",
                     content: Wrap(
                       spacing: 8.w,
                       runSpacing: 8.h,
-                      children: amenities.entries
+                      children: (hotel['amenities'] as Map<String, dynamic>).entries
                           .where((entry) => entry.value == true)
                           .map((entry) => Chip(
                         label: CustomText(
@@ -154,38 +141,121 @@ class UserHotelDetailScreen extends StatelessWidget {
                     expansionNotifier: amenitiesExpanded,
                   ),
 
-                  // Reviews Section
+                  // Fetch Reviews from Firestore
                   _buildExpansionTile(
                     title: "Reviews",
-                    content: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5.w),
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: reviews.isEmpty
-                            ? CustomText(
-                          title: "No reviews available yet.",
-                          fontSize: 14.sp,
-                          textAlign: TextAlign.start,
-                          textColor: AppColors.black.withOpacity(0.7),
-                        )
-                            : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: reviews
-                              .map<Widget>((review) => Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5.h),
+                    content: FutureBuilder<QuerySnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('hotel_reviews')
+                          .where('hotelId', isEqualTo: hotelID) // Ensure hotel['id'] is correct here
+                          .get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Padding(
+                            padding: EdgeInsets.only(top:8.h,bottom: 8.h),
                             child: CustomText(
-                              title: review,
+                              title: "No reviews available yet.",
                               fontSize: 14.sp,
                               textAlign: TextAlign.start,
                               textColor: AppColors.black.withOpacity(0.7),
                             ),
-                          ))
-                              .toList(),
-                        ),
-                      ),
+                          );
+                        }
+
+                        // Process reviews and display
+                        var reviews = snapshot.data!.docs.map((doc) {
+                          final timestamp = doc['timestamp'];
+                          final username = doc['username'];
+
+                          DateTime? reviewTime = timestamp != null && timestamp is Timestamp
+                              ? timestamp.toDate()
+                              : null;
+
+                          return {
+                            'review': doc['review'] as String,
+                            'username': username as String?,
+                            'timestamp': reviewTime,
+                          };
+                        }).toList();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: reviews.asMap().entries.map<Widget>((entry) {
+                            int index = entry.key;
+                            var review = entry.value;
+
+                            String formattedTime = "";
+                            if (review['timestamp'] != null) {
+                              DateTime reviewTimestamp = review['timestamp'] as DateTime;
+                              formattedTime = DateFormat('MMMM d, yyyy \u200Bat h:mm a')
+                                  .format(reviewTimestamp);
+                            } else {
+                              formattedTime = "N/A";
+                            }
+
+                            String userInitial = (review['username'] as String?)?.isNotEmpty == true
+                                ? (review['username'] as String)[0].toUpperCase()
+                                : "U";
+
+                            return Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5.h),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(15.r),
+                                  border: Border.all(color: AppColors.black.withOpacity(0.1), width: 0.5),
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: AppColors.primary,
+                                    child: Text(userInitial, style: TextStyle(color: Colors.white, fontSize: 16.sp)),
+                                  ),
+                                  title: CustomText(
+                                    title: review['review'].toString(),
+                                    fontSize: 14.sp,
+                                    capitalize: true,
+                                    textAlign: TextAlign.start,
+                                    textColor: AppColors.black.withOpacity(0.7),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      CustomText(
+                                        title: review['username'].toString(),
+                                        fontSize: 12.sp,
+                                        capitalize: true,
+                                        textColor: AppColors.black.withOpacity(0.5),
+                                      ),
+                                      AppSizedBox.space5h,
+                                      Align(
+                                        alignment: Alignment.bottomRight,
+                                        child: CustomText(
+                                          title: formattedTime,
+                                          fontSize: 12.sp,
+                                          textStyle: TextStyle(
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                          textColor: AppColors.black.withOpacity(0.5),
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
                     ),
                     expansionNotifier: reviewsExpanded,
-                  ),
+                  )
+
+
                 ],
               ),
             ),
@@ -194,15 +264,31 @@ class UserHotelDetailScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Container(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 25.h,horizontal: 15.h),
+          padding: EdgeInsets.symmetric(vertical: 25.h, horizontal: 15.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Add Booking Button
               Expanded(
                 child: InkWell(
                   onTap: () {
-                    // Handle Add Booking action
+
+                    Get.to(UserAddHotelReviewScreen(hotelId:hotelID));
+                  },
+                  child: CustomButton(
+                    haveBgColor: true,
+                    btnTitle: "Add Review",
+                    height: 45.h,
+                    btnTitleColor: AppColors.white,
+                    bgColor: AppColors.blue,
+                    borderRadius: 45.r,
+                  ),
+                ),
+              ),
+              AppSizedBox.space15w,
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    // Add booking action
                   },
                   child: CustomButton(
                     haveBgColor: true,

@@ -11,6 +11,8 @@ import '../views/admin/admin_manage_attractions_screen.dart';
 import '../views/admin/admin_manage_hotel_screen.dart';
 import '../views/admin/admin_manage_users_screen.dart';
 import '../views/auth/login_screen.dart';
+import '../views/user/user_view_all_attraction_screen.dart';
+import '../views/user/user_view_all_hotel_screen.dart';
 import 'custom_text.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -173,7 +175,9 @@ class CustomDrawer extends StatelessWidget {
         ),
         AppSizedBox.space5h,
         ListTile(
-          onTap: () {},
+          onTap: () {
+            Get.to(UserViewAllHotelScreen());
+          },
           trailing: Icon(Icons.arrow_forward_ios, size: 10.h,color: AppColors.black,),
           title: CustomText(
             textColor: AppColors.black,
@@ -192,7 +196,9 @@ class CustomDrawer extends StatelessWidget {
         ),
         AppSizedBox.space5h,
         ListTile(
-          onTap: () {},
+          onTap: () {
+            Get.to(UserViewAllAttractionScreen());
+          },
           trailing: Icon(Icons.arrow_forward_ios, size: 10.h,color: AppColors.black,),
           title: CustomText(
             textColor: AppColors.black,

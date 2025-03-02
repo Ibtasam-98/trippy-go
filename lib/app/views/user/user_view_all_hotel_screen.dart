@@ -2,39 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:trippygo/app/views/user/user_hotel_detail_screen.dart';
 
 import '../../config/app_colors.dart';
+import '../../config/app_sized_box.dart';
 import '../../widgets/custom_text.dart';
 import '../../widgets/custom_text_field.dart';
-import 'admin_add_attraction_screen.dart';
-import 'admin_attraction_detail_screen.dart';
 
-class AdminManageAttractionScreen extends StatefulWidget {
+class UserViewAllHotelScreen extends StatefulWidget {
   @override
-  _AdminManageAttractionScreenState createState() => _AdminManageAttractionScreenState();
+  _UserViewAllHotelScreenState createState() => _UserViewAllHotelScreenState();
 }
 
-class _AdminManageAttractionScreenState extends State<AdminManageAttractionScreen> {
+class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
   TextEditingController searchController = TextEditingController();
   String searchQuery = "";
-
-
-  String _getCategoryImage(String category) {
-    switch (category.toLowerCase()) {
-      case "museum":
-        return "assets/images/museum.png";
-      case "beach":
-        return "assets/images/attraction.jpg";
-      case "park":
-        return "assets/images/park.jpg";
-      case "mountain":
-        return "assets/images/mountain.jpg";
-      case "historic":
-        return "assets/images/museum.png";
-      default:
-        return "assets/images/attraction.jpg"; 
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +38,9 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
           ),
         ),
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () {
+            Get.back();
+          },
           icon: Icon(Icons.west, color: AppColors.black, size: 20.w),
         ),
       ),
@@ -65,16 +49,15 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔍 Search Bar
             CustomTextField(
-              label: "Search Attraction",
+              label: "Search Hotel",
               isPassword: false,
               textEditingController: searchController,
               fillColor: Colors.white,
               borderColor: AppColors.black.withOpacity(0.1),
               borderRadius: 8.0,
-              hintFontSize: 14.0,
-              prefixIconSize: 20.0,
+              hintFontSize: 14.0, // Adjust hint size if needed
+              prefixIconSize: 20.0, // Adjust icon size if needed
               keyboardType: TextInputType.text,
               icon: Icons.search,
               onChanged: (value) {
@@ -84,51 +67,59 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
               },
             ),
 
-            SizedBox(height: 10),
+            AppSizedBox.space10h,
+            CustomText(
+              title: "Our Hotel",
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'grenda',
+            ),
 
-            // 🏞️ Grid View of Attractions
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('attractions').snapshots(),
-                builder: (context, snapshot) {
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
-
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(
                       child: CustomText(
-                        title: "No attractions found!",
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        textColor: Colors.grey,
+                        title: "No Hotels Available",
+                        fontSize: 14.sp,
                       ),
                     );
                   }
 
-                  // 🔍 Filter attractions based on search query
-                  var attractions = snapshot.data!.docs.where((doc) {
-                    var name = doc["spot_name"].toString().toLowerCase();
-                    return name.contains(searchQuery);
+                  var hotels = snapshot.data!.docs;
+
+                  // Filter hotels based on search query
+                  var filteredHotels = hotels.where((hotel) {
+                    String hotelName = hotel['name'].toString().toLowerCase();
+                    return hotelName.contains(searchQuery);
                   }).toList();
 
                   return GridView.builder(
                     padding: EdgeInsets.all(10),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // 2 items per row
+                      crossAxisCount: 2,
                       crossAxisSpacing: 6,
-                      mainAxisSpacing: 6,
                       childAspectRatio: 0.9,
                     ),
-                    itemCount: attractions.length,
+                    itemCount: filteredHotels.length,
                     itemBuilder: (context, index) {
-                      var attraction = attractions[index];
-                      String category = attraction['category'] ?? "Uncategorized";
-                      String imagePath = _getCategoryImage(category); // Get category-specific image
-
+                      var hotel = filteredHotels[index];
                       return GestureDetector(
                         onTap: () {
-                          Get.to(AdminAttractionDetailScreen(attraction: attraction));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserHotelDetailScreen(
+                                hotel: hotel.data() as Map<String, dynamic>,
+                                hotelID: hotel.id.toString(),
+                              ),
+                            ),
+                          );
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,13 +130,12 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(10.r)),
                                 image: DecorationImage(
-                                  image: AssetImage(imagePath), // 🖼 Dynamic category image
+                                  image: AssetImage("assets/images/hotel_placeholder.jpg"),
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               child: Stack(
                                 children: [
-                                  // Gradient Overlay
                                   Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.all(Radius.circular(10.r)),
@@ -159,8 +149,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                                       ),
                                     ),
                                   ),
-
-                                  // Category (Top Right)
                                   Positioned(
                                     top: 10,
                                     right: 10,
@@ -170,30 +158,36 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                                         color: Colors.black54,
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      child: CustomText(
-                                        title: category,
-                                        fontSize: 12.sp,
-                                        textColor: AppColors.white,
-                                        fontWeight: FontWeight.bold,
-                                        capitalize: true,
+                                      child: Row(
+                                        children: [
+                                          CustomText(
+                                            title: hotel['category'].toString().split('-')[0],
+                                            fontSize: 12.sp,
+                                            textColor: AppColors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          AppSizedBox.space5w,
+                                          Icon(Icons.star, color: Colors.yellow, size: 14),
+                                        ],
                                       ),
                                     ),
                                   ),
                                   Positioned(
-                                    bottom: 10,
-                                    left: 10,
+                                    bottom:10,
+                                    left:10,
                                     child: CustomText(
-                                      title: attraction['spot_name'],
+                                      title: hotel['name'],
                                       fontSize: 15.sp,
+                                      capitalize: true,
                                       fontWeight: FontWeight.bold,
                                       textColor: AppColors.white,
                                       fontFamily: 'quicksand',
-                                      capitalize: true,
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ),
+
                           ],
                         ),
                       );
@@ -205,11 +199,7 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () => Get.to(AdminAddAttractionScreen()),
-        child: Icon(Icons.add, color: AppColors.white),
-      ),
     );
+
   }
 }

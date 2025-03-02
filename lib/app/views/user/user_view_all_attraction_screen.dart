@@ -2,19 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:trippygo/app/views/user/user_attraction_detail_screen.dart';
 
 import '../../config/app_colors.dart';
 import '../../widgets/custom_text.dart';
 import '../../widgets/custom_text_field.dart';
-import 'admin_add_attraction_screen.dart';
-import 'admin_attraction_detail_screen.dart';
 
-class AdminManageAttractionScreen extends StatefulWidget {
+class UserViewAllAttractionScreen extends StatefulWidget {
   @override
-  _AdminManageAttractionScreenState createState() => _AdminManageAttractionScreenState();
+  _UserViewAllAttractionScreenState createState() => _UserViewAllAttractionScreenState();
 }
 
-class _AdminManageAttractionScreenState extends State<AdminManageAttractionScreen> {
+class _UserViewAllAttractionScreenState extends State<UserViewAllAttractionScreen> {
   TextEditingController searchController = TextEditingController();
   String searchQuery = "";
 
@@ -32,7 +31,7 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
       case "historic":
         return "assets/images/museum.png";
       default:
-        return "assets/images/attraction.jpg"; 
+        return "assets/images/attraction.jpg";
     }
   }
 
@@ -86,7 +85,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
 
             SizedBox(height: 10),
 
-            // 🏞️ Grid View of Attractions
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('attractions').snapshots(),
@@ -106,7 +104,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                     );
                   }
 
-                  // 🔍 Filter attractions based on search query
                   var attractions = snapshot.data!.docs.where((doc) {
                     var name = doc["spot_name"].toString().toLowerCase();
                     return name.contains(searchQuery);
@@ -128,7 +125,7 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
 
                       return GestureDetector(
                         onTap: () {
-                          Get.to(AdminAttractionDetailScreen(attraction: attraction));
+                          Get.to(UserAttractionDetailScreen(attraction: attraction));
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,11 +201,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () => Get.to(AdminAddAttractionScreen()),
-        child: Icon(Icons.add, color: AppColors.white),
       ),
     );
   }

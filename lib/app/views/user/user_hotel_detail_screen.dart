@@ -158,7 +158,7 @@ class UserHotelDetailScreen extends StatelessWidget {
                           return Padding(
                             padding: EdgeInsets.only(top:8.h,bottom: 8.h),
                             child: CustomText(
-                              title: "No reviews available yet.",
+                              title: "No reviews available yet",
                               fontSize: 14.sp,
                               textAlign: TextAlign.start,
                               textColor: AppColors.black.withOpacity(0.7),

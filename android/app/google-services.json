@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "378975756145",
+    "project_id": "trippygo-2ecda",
+    "storage_bucket": "trippygo-2ecda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378975756145:android:986cb76c90ef78e39260d0",
+        "android_client_info": {
+          "package_name": "com.quantumbyte.trippygo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvyiWinQge2bDYkGCh0aYFCvBjgKxvJn4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

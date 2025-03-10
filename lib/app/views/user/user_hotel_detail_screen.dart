@@ -6,6 +6,7 @@ import 'package:trippygo/app/config/app_colors.dart';
 import 'package:trippygo/app/config/app_sized_box.dart';
 import 'package:get/get.dart';
 import 'package:trippygo/app/views/user/user_add_hotel_review_screen.dart';
+import 'package:trippygo/app/views/user/user_hotel_booking_screen.dart';
 import '../../widgets/custom_text.dart';
 import '../../widgets/custom_button.dart'; // Assuming CustomButton is already defined
 
@@ -13,9 +14,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserHotelDetailScreen extends StatelessWidget {
   final Map<String, dynamic> hotel;
-  final String hotelID;
+  final String hotelID, hotelName;
 
-  UserHotelDetailScreen({required this.hotel, required this.hotelID});
+  UserHotelDetailScreen({required this.hotel, required this.hotelID, required this.hotelName});
 
   @override
   Widget build(BuildContext context) {
@@ -271,7 +272,6 @@ class UserHotelDetailScreen extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () {
-
                     Get.to(UserAddHotelReviewScreen(hotelId:hotelID));
                   },
                   child: CustomButton(
@@ -288,7 +288,10 @@ class UserHotelDetailScreen extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () {
-                    // Add booking action
+                    Get.to(UserHotelBookingScreen(
+                      hotelId: hotelID,
+                      hotelName: hotelName,
+                    ));
                   },
                   child: CustomButton(
                     haveBgColor: true,

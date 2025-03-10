@@ -117,6 +117,7 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                               builder: (context) => UserHotelDetailScreen(
                                 hotel: hotel.data() as Map<String, dynamic>,
                                 hotelID: hotel.id.toString(),
+                                hotelName: hotel['name'],
                               ),
                             ),
                           );

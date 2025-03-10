@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:trippygo/app/views/user/user_add_attraction_review_screen.dart';
 import '../../config/app_colors.dart';
 import '../../config/app_sized_box.dart';
 import '../../widgets/custom_button.dart';
@@ -89,7 +91,7 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
                     children: [
                       Expanded(
                         child: CustomText(
-                          title: data['spot_name'] ?? "Unknown",
+                          title: data['attraction_name'] ?? "Unknown",
                           fontFamily: 'grenda',
                           fontWeight: FontWeight.bold,
                           textColor: AppColors.black,
@@ -154,22 +156,127 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
                     ),
                   ),
 
-                  // Reviews Section
                   _buildExpansionTile(
                     title: "Reviews",
-                    content: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5.w),
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: CustomText(
-                          title: "No reviews available yet.",
-                          fontSize: 14.sp,
-                          textAlign: TextAlign.start,
-                          textColor: AppColors.black.withOpacity(0.7),
-                        ),
-                      ),
+                    content: FutureBuilder<QuerySnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('attraction_reviews')
+                          .where('attractionId', isEqualTo: widget.attraction.id)
+                          .get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Padding(
+                            padding: EdgeInsets.only(top: 8.h, bottom: 8.h),
+                            child: CustomText(
+                              title: "No reviews available yet",
+                              fontSize: 14.sp,
+                              textAlign: TextAlign.start,
+                              textColor: AppColors.black.withOpacity(0.7),
+                            ),
+                          );
+                        }
+
+                        var reviews = snapshot.data!.docs.map((doc) {
+                          final timestamp = doc['timestamp'];
+                          final username = doc['username'];
+
+                          DateTime? reviewTime = timestamp != null && timestamp is Timestamp
+                              ? timestamp.toDate()
+                              : null;
+
+                          return {
+                            'review': doc['review'] as String,
+                            'username': username as String?,
+                            'timestamp': reviewTime,
+                            'rating': doc['rating'] ?? 0,
+                          };
+                        }).toList();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: reviews.map<Widget>((review) {
+                            String formattedTime = review['timestamp'] != null
+                                ? DateFormat('MMMM d, yyyy \u200Bat h:mm a').format(review['timestamp'] as DateTime)
+                                : "N/A";
+
+                            String userInitial = (review['username'] as String?)?.isNotEmpty == true
+                                ? (review['username'] as String)[0].toUpperCase()
+                                : "U";
+
+                            return Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5.h),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(15.r),
+                                  border: Border.all(color: AppColors.black.withOpacity(0.1), width: 0.5),
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: AppColors.primary,
+                                    child: Text(userInitial, style: TextStyle(color: Colors.white, fontSize: 16.sp)),
+                                  ),
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      CustomText(
+                                        title: review['username'].toString(),
+                                        fontSize: 14.sp,
+                                        capitalize: true,
+                                        textAlign: TextAlign.start,
+                                        textColor: AppColors.black.withOpacity(0.7),
+                                      ),
+                                      Row(
+                                        children: List.generate(
+                                          5,
+                                              (index) => Icon(
+                                            index < review['rating']
+                                                ? Icons.star
+                                                : Icons.star_border,
+                                            color: AppColors.primary,
+                                            size: 14.sp,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      AppSizedBox.space5h,
+                                      CustomText(
+                                        title: review['review'].toString(),
+                                        fontSize: 12.sp,
+                                        capitalize: true,
+                                        textColor: AppColors.black.withOpacity(0.5),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.bottomRight,
+                                        child: CustomText(
+                                          title: formattedTime,
+                                          fontSize: 12.sp,
+                                          textStyle: TextStyle(fontStyle: FontStyle.italic),
+                                          textColor: AppColors.black.withOpacity(0.5),
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
                     ),
+
                   ),
+
+
                 ],
               ),
             ),
@@ -182,11 +289,29 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Add Booking Button
               Expanded(
                 child: InkWell(
                   onTap: () {
-                    // Handle Add Booking action
+                    Get.to(UserAddAttractionReviewScreen(
+                      attractionId: widget.attraction.id,
+                    ));
+                    print(widget.attraction.id);
+                  },
+                  child: CustomButton(
+                    haveBgColor: true,
+                    btnTitle: "Add Review",
+                    height: 45.h,
+                    btnTitleColor: AppColors.white,
+                    bgColor: AppColors.blue,
+                    borderRadius: 45.r,
+                  ),
+                ),
+              ),
+              AppSizedBox.space15w,
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+
                   },
                   child: CustomButton(
                     haveBgColor: true,

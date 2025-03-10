@@ -1,15 +1,13 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:trippygo/app/views/auth/login_screen.dart';
-import '../../views/user/user_home_screen.dart';
 
 class SignUpController extends GetxController {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController contactNumberController = TextEditingController();
   final TextEditingController userSignUpEmailController = TextEditingController();
@@ -19,33 +17,22 @@ class SignUpController extends GetxController {
 
   void createUserWithEmailAndPassword(BuildContext context) async {
     if (!formKey.currentState!.validate()) return;
-
     isLoading.value = true;
-
     try {
-      print("Creating user...");
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: userSignUpEmailController.text,
         password: userSignUpPasswordController.text,
       );
-
       User? user = userCredential.user;
       if (user == null) {
-        print("User creation failed!");
         return;
       }
-
-      print("User created successfully: ${user.uid}");
-
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'username': userNameController.text,
         'contactNumber': contactNumberController.text,
         'email': user.email!,
       });
-
-      print("User added to Firestore!");
       Get.to(() => LoginScreen());
-
     } on FirebaseAuthException catch (e) {
       print("FirebaseAuthException: ${e.message}");
       _showSnackBar(context, 'Signup Failed', e.message ?? 'An unknown error occurred.');
@@ -56,7 +43,6 @@ class SignUpController extends GetxController {
       isLoading.value = false;
     }
   }
-
   void _showSnackBar(BuildContext context, String title, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

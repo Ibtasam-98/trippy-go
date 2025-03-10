@@ -1,18 +1,14 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-
 import '../../views/admin/admin_home_screen.dart';
 import '../../views/user/user_bottom_navigation.dart';
-
 
 class LoginController extends GetxController {
   final TextEditingController userEmailController = TextEditingController();
   final TextEditingController userPasswordController = TextEditingController();
   var isLoading = false.obs;
-
 
   String? emailValidator(String? value) {
     if (value == null || value.isEmpty) {
@@ -23,17 +19,14 @@ class LoginController extends GetxController {
     return null;
   }
 
-
   String? passwordValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter a password';
-    } else if (value.length < 6) { // condition, the length of password must be greater then
-      // value 6
+    } else if (value.length < 6) {
       return 'Password must be at least 6 characters long';
     }
     return null;
   }
-
 
   void signInWithEmailAndPassword(BuildContext context, GlobalKey<FormState> formKey) async {
     if (!formKey.currentState!.validate()) return;

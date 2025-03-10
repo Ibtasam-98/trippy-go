@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import '../../config/app_colors.dart';
 import '../../controllers/admin/admin_add_attraction_screen_controller.dart';
 import '../../widgets/custom_button.dart';
@@ -46,10 +48,10 @@ class AdminAddAttractionScreen extends StatelessWidget {
           child: ListView(
             children: [
               CustomTextField(
-                label: "Spot Name",
+                label: "Attraction Name",
                 isPassword: false,
-                textEditingController: controller.spotNameController,
-                validator: (value) => controller.validateAlphabetic(value, "Spot Name"),
+                textEditingController: controller.attractionNameController,
+                validator: (value) => controller.validateAlphabetic(value, "Attraction Name"),
               ),
 
               CustomDropdown(
@@ -118,7 +120,7 @@ class AdminAddAttractionScreen extends StatelessWidget {
                   ? Center(child: CircularProgressIndicator())
                   : InkWell(
                 onTap: () => controller.saveOrUpdateAttraction(
-                  Get.context!, // Pass the context
+                  Get.context!,
                   attraction,
                 ),
                 child: CustomButton(

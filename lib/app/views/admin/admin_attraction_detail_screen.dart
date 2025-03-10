@@ -87,7 +87,7 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
                     children: [
                       Expanded(
                         child: CustomText(
-                          title: data['spot_name'] ?? "Unknown",
+                          title: data['attraction_name'] ?? "Unknown",
                           fontFamily: 'grenda',
                           fontWeight: FontWeight.bold,
                           textColor: AppColors.black,

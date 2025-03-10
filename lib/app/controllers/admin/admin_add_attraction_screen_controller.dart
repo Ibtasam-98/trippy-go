@@ -7,26 +7,23 @@ import '../../views/admin/admin_manage_attractions_screen.dart';
 class AdminAttractionController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
-  // Controllers for text fields
-  final spotNameController = TextEditingController();
+  final attractionNameController = TextEditingController();
   final descriptionController = TextEditingController();
   final cityController = TextEditingController();
   final entryFeeController = TextEditingController();
   final openingHoursController = TextEditingController();
 
-  // Dropdown selections (Using RxString for reactivity)
   final selectedCategory = "".obs;
   final selectedParking = "".obs;
   final selectedPublicTransport = "".obs;
   final selectedWheelchair = "".obs;
   final selectedSeason = "".obs;
 
-  var isLoading = false.obs; // Loading state
+  var isLoading = false.obs;
 
-  // Function to set data for editing
   void setAttractionData(dynamic attraction) {
     if (attraction != null) {
-      spotNameController.text = attraction['spot_name'] ?? "";
+      attractionNameController.text = attraction['attraction_name'] ?? "";
       descriptionController.text = attraction['description'] ?? "";
       cityController.text = attraction['city'] ?? "";
       entryFeeController.text = attraction['entry_fee'] ?? "";
@@ -40,7 +37,6 @@ class AdminAttractionController extends GetxController {
     }
   }
 
-  // Function to show time picker
   Future<void> selectOpeningHours(BuildContext context) async {
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
@@ -51,32 +47,29 @@ class AdminAttractionController extends GetxController {
     }
   }
 
-  // Function to validate alphabetic fields
   String? validateAlphabetic(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
       return "$fieldName is required.";
-    } else if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
-      return "$fieldName should contain only alphabets.";
+    } else if (!RegExp(r"^[a-zA-ZÀ-ÿ\s'-]+$").hasMatch(value)) {
+      return "$fieldName should contain only letters, spaces, hyphens, or apostrophes.";
     }
     return null;
   }
 
-  // Function to validate numeric fields
   String? validateNumeric(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
-      return null; // Entry fee is optional
-    } else if (!RegExp(r"^\d+$").hasMatch(value)) {
+      return null;
+    } else if (!RegExp(r"^\d+(\.\d+)?$").hasMatch(value)) {
       return "$fieldName should contain only numbers.";
     }
     return null;
   }
 
-  // Function to save or update attraction data
+
   Future<void> saveOrUpdateAttraction(BuildContext context, dynamic attraction) async {
     if (!formKey.currentState!.validate()) {
       return;
     }
-
     if (selectedCategory.value.isEmpty ||
         selectedParking.value.isEmpty ||
         selectedPublicTransport.value.isEmpty ||
@@ -85,14 +78,11 @@ class AdminAttractionController extends GetxController {
       _showSnackbar(context, "Error", "Please select all dropdown fields!", ContentType.failure);
       return;
     }
-
     isLoading.value = true;
-
     try {
       if (attraction == null) {
-        // Add new attraction
-        await FirebaseFirestore.instance.collection('attractions').add({
-          "spot_name": spotNameController.text,
+        DocumentReference docRef = await FirebaseFirestore.instance.collection('attractions').add({
+          "attraction_name": attractionNameController.text,
           "category": selectedCategory.value,
           "description": descriptionController.text,
           "city": cityController.text,
@@ -105,11 +95,12 @@ class AdminAttractionController extends GetxController {
           "created_at": Timestamp.now(),
         });
 
+        await docRef.update({"id": docRef.id});
+
         _showSnackbar(context, "Success", "Attraction added successfully!", ContentType.success);
       } else {
-        // Update existing attraction
         await FirebaseFirestore.instance.collection('attractions').doc(attraction.id).update({
-          "spot_name": spotNameController.text,
+          "attraction_name": attractionNameController.text,
           "category": selectedCategory.value,
           "description": descriptionController.text,
           "city": cityController.text,
@@ -125,7 +116,6 @@ class AdminAttractionController extends GetxController {
         _showSnackbar(context, "Success", "Attraction updated successfully!", ContentType.success);
       }
 
-      // Redirect to AdminManageAttractionScreen after submission
       Future.delayed(Duration(seconds: 1), () {
         Get.off(() => AdminManageAttractionScreen());
       });
@@ -137,7 +127,6 @@ class AdminAttractionController extends GetxController {
     isLoading.value = false;
   }
 
-  // Function to show Awesome Snackbar
   void _showSnackbar(BuildContext context, String title, String message, ContentType type) {
     final snackBar = SnackBar(
       elevation: 0,
@@ -157,8 +146,7 @@ class AdminAttractionController extends GetxController {
 
   @override
   void onClose() {
-    // Dispose controllers when screen is closed
-    spotNameController.dispose();
+    attractionNameController.dispose();
     descriptionController.dispose();
     cityController.dispose();
     entryFeeController.dispose();

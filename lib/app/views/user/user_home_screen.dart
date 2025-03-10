@@ -243,6 +243,7 @@ class UserHomeScreen extends StatelessWidget {
                                       builder: (context) => UserHotelDetailScreen(
                                         hotel: hotel.data() as Map<String, dynamic>,
                                         hotelID: hotel.id.toString(),
+                                        hotelName: hotel['name'],
                                       ),
                                     ),
                                   );
@@ -399,6 +400,7 @@ class UserHomeScreen extends StatelessWidget {
                         },
                       ),
                     ),
+                    AppSizedBox.space25h,
                   ],
                 ),
               ),
@@ -446,7 +448,7 @@ class AttractionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Map<String, dynamic> data = attraction.data() as Map<String, dynamic>;
-    String spotName = data['spot_name'] ?? "Unknown";
+    String spotName = data['attraction_name'] ?? "Unknown";
     String category = data['category'] ?? "Uncategorized";
     String imagePath = category.toLowerCase() == "museum"
         ? "assets/images/museum.png"

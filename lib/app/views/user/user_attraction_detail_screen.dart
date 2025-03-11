@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:trippygo/app/views/user/user_add_attraction_booking_screen.dart';
 import 'package:trippygo/app/views/user/user_add_attraction_review_screen.dart';
 import '../../config/app_colors.dart';
 import '../../config/app_sized_box.dart';
@@ -311,7 +312,10 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
               Expanded(
                 child: InkWell(
                   onTap: () {
-
+                    Get.to(UserAddAttractionBookingScreen(
+                      attractionName: data['attraction_name'],
+                      attractionID: data['id'],
+                    ));
                   },
                   child: CustomButton(
                     haveBgColor: true,

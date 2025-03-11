@@ -92,7 +92,7 @@ class UserHotelBookingController extends GetxController {
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
       String bookingType = hotelId.isNotEmpty ? 'hotel' : 'attraction';
 
-      await FirebaseFirestore.instance.collection('bookings').add({
+      await FirebaseFirestore.instance.collection('bookings_hotels').add({
         'userId': user!.uid,
         'fullName': userData['username'] ?? 'N/A',
         'email': userData['email'] ?? user!.email,

@@ -12,6 +12,7 @@ import '../../config/app_sized_box.dart';
 import '../../widgets/custom_drawer.dart';
 import '../../widgets/custom_text.dart';
 import '../auth/login_screen.dart';
+import 'admin_hotel_booking_detail_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   final _advancedDrawerController = AdvancedDrawerController();
@@ -20,6 +21,7 @@ class AdminHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     return FutureBuilder<User?>(
       future: FirebaseAuth.instance.authStateChanges().first,
       builder: (context, snapshot) {
@@ -117,8 +119,151 @@ class AdminHomeScreen extends StatelessWidget {
                       textStyle: GoogleFonts.montserrat(),
                       fontWeight: FontWeight.w400,
                     ),
+                    AppSizedBox.space15h,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CustomText(
+                          textColor: AppColors.black,
+                          fontSize: 16.sp,
+                          title: "Hotels Bookings",
+                          maxLines: 2,
+                          textOverflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.start,
+                          textStyle: GoogleFonts.montserrat(),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        CustomText(
+                          textColor: AppColors.primary,
+                          fontSize: 12.sp,
+                          title: "View All",
+                          maxLines: 2,
+                          textOverflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.start,
+                          textStyle: GoogleFonts.montserrat(),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
                     AppSizedBox.space10h,
+                    StreamBuilder<QuerySnapshot>(
+                      stream: _firestore.collection("bookings_hotels").snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
 
+                        var bookings = snapshot.data!.docs;
+
+                        if (bookings.isEmpty) {
+                          return Center(child: CustomText(title: "No Bookings Found", fontSize: 16));
+                        }
+
+                        return SizedBox(
+                          height: 70.h,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: bookings.length,
+                            itemBuilder: (context, index) {
+                              var booking = bookings[index];
+                              var data = booking.data() as Map<String, dynamic>;
+                              String customerName = data["fullName"] ?? "N/A";
+                              String hotelName = data["hotelName"] ?? "N/A";
+
+                              // Convert Firestore Timestamp to readable string format
+                              String bookingTime = "N/A";
+                              if (data["timestamp"] != null && data["timestamp"] is Timestamp) {
+                                DateTime dateTime = (data["timestamp"] as Timestamp).toDate();
+                                bookingTime = DateFormat("d MMM h:mm a").format(dateTime); // Example: 8 Mar 5:00 PM
+                              }
+
+                              String firstInitial = customerName.isNotEmpty ? customerName[0].toUpperCase() : "?";
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Get.to(() => AdminHotelBookingDetailScreen(
+                                    bookingId: booking.id,
+                                    bookingType: "hotel",
+                                  ));
+                                },
+                                child: Container(
+                                  width: Get.width - 50,
+                                  height: 100.h,
+                                  margin: EdgeInsets.symmetric(horizontal: 8),
+                                  padding: EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: Border.all(color: AppColors.grey, width: 1),
+                                    color: AppColors.white,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Circular avatar with first initial
+                                      CircleAvatar(
+                                        backgroundColor: AppColors.primary,
+                                        radius: 20.r,
+                                        child: CustomText(
+                                          title: firstInitial,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          textColor: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      // Wrapping Column inside Expanded to fix layout issue
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            CustomText(
+                                              title: customerName,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              capitalize: true,
+                                            ),
+                                            SizedBox(height: 4),
+                                            CustomText(title: "Hotel: $hotelName", fontSize: 14),
+                                            CustomText(title: "Booking: $bookingTime", fontSize: 12, textColor: AppColors.black),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(Icons.arrow_forward_ios, color: AppColors.black, size: 18),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    AppSizedBox.space10h,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CustomText(
+                          textColor: AppColors.black,
+                          fontSize: 16.sp,
+                          title: "Attractions Bookings",
+                          maxLines: 2,
+                          textOverflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.start,
+                          textStyle: GoogleFonts.montserrat(),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        CustomText(
+                          textColor: AppColors.primary,
+                          fontSize: 12.sp,
+                          title: "View All",
+                          maxLines: 2,
+                          textOverflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.start,
+                          textStyle: GoogleFonts.montserrat(),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -134,8 +279,6 @@ class AdminHomeScreen extends StatelessWidget {
   }
 
   bool _isAdmin(User user) {
-    // Check if the user email matches the admin email
     return user.email == 'admin@gmail.com';
   }
-
 }

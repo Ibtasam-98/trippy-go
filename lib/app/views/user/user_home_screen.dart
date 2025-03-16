@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trippygo/app/views/user/user_attraction_detail_screen.dart';
 import 'package:trippygo/app/views/user/user_hotel_detail_screen.dart';
@@ -35,6 +36,27 @@ class UserHomeScreen extends StatelessWidget {
   final UserHomeScreenController controller = Get.put(UserHomeScreenController());
   final TextEditingController searchController = TextEditingController(); // FIXED: Defined controller
   final BottomNavigationController bottomNavController = Get.put(BottomNavigationController());
+
+
+  Future<void> saveFavorite(String key, String itemId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> favorites = prefs.getStringList(key) ?? [];
+    if (!favorites.contains(itemId)) {
+      favorites.add(itemId);  // Add item to favorites
+    } else {
+      favorites.remove(itemId);  // Remove item from favorites
+    }
+    await prefs.setStringList(key, favorites);
+  }
+
+// Function to check if an item is favorite
+  Future<bool> isFavorite(String key, String itemId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> favorites = prefs.getStringList(key) ?? [];
+    return favorites.contains(itemId);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -279,20 +301,90 @@ class UserHomeScreen extends StatelessWidget {
                                                 right: 10.w,
                                                 child: GestureDetector(
                                                   onTap: () {
+                                                    String hotelId = hotel.id;
+                                                    // Toggle favorite status
+                                                    saveFavorite('hotel_favorites', hotelId).then((_) {
+                                                      (context as Element).reassemble();  // Trigger a rebuild to reflect the updated favorite status
+                                                    });
+
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => UserHotelDetailScreen(
+                                                          hotel: hotel.data() as Map<String, dynamic>,
+                                                          hotelID: hotel.id.toString(),
+                                                          hotelName: hotel['name'],
+                                                        ),
+                                                      ),
+                                                    );
                                                   },
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(5.w),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black.withOpacity(0.5),
-                                                      shape: BoxShape.circle,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(right: 10.w),
+                                                    child: Container(
+                                                      height: 210.h,
+                                                      width: 250.w,
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.white,
+                                                        borderRadius: BorderRadius.circular(15.r),
+                                                        border: Border.all(color: AppColors.black.withOpacity(0.1), width: 0.5),
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius: BorderRadius.only(
+                                                              topLeft: Radius.circular(15.r),
+                                                              topRight: Radius.circular(15.r),
+                                                            ),
+                                                            child: Stack(
+                                                              children: [
+                                                                Image.asset(
+                                                                  "assets/images/hotel_placeholder.jpg",
+                                                                  width: 250.w,
+                                                                  height: 150.h,
+                                                                  fit: BoxFit.cover,
+                                                                ),
+                                                                Positioned(
+                                                                  top: 10.h,
+                                                                  right: 10.w,
+                                                                  child: FutureBuilder<bool>(
+                                                                    future: isFavorite('hotel_favorites', hotel.id.toString(),),
+                                                                    builder: (context, snapshot) {
+                                                                      if (!snapshot.hasData) {
+                                                                        return CircularProgressIndicator();
+                                                                      }
+                                                                      bool isFav = snapshot.data!;
+
+                                                                      return GestureDetector(
+                                                                        onTap: () async {
+                                                                          await saveFavorite('hotel_favorites', hotel.id.toString(),);
+                                                                          (context as Element).reassemble();  // Trigger a rebuild
+                                                                        },
+                                                                        child: Container(
+                                                                          padding: EdgeInsets.all(5.w),
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.black.withOpacity(0.5),
+                                                                            shape: BoxShape.circle,
+                                                                          ),
+                                                                          child: Icon(
+                                                                            isFav ? Icons.favorite : Icons.favorite_border,
+                                                                            color: AppColors.white,
+                                                                            size: 20.sp,
+                                                                          ),
+                                                                        ),
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                    child: Icon(
-                                                      Icons.favorite ,
-                                                      color: AppColors.redDark ,
-                                                      size: 20.sp,
-                                                    ),
-                                                  )
-                                                ),
+                                                  ),
+                                                )
+
                                               ),
                                             ],
                                           ),
@@ -445,6 +537,25 @@ class AttractionCard extends StatelessWidget {
 
   AttractionCard({required this.attraction});
 
+  Future<void> saveFavorite(String key, String itemId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> favorites = prefs.getStringList(key) ?? [];
+    if (!favorites.contains(itemId)) {
+      favorites.add(itemId);  // Add item to favorites
+    } else {
+      favorites.remove(itemId);  // Remove item from favorites
+    }
+    await prefs.setStringList(key, favorites);
+  }
+
+// Function to check if an item is favorite
+  Future<bool> isFavorite(String key, String itemId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> favorites = prefs.getStringList(key) ?? [];
+    return favorites.contains(itemId);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     Map<String, dynamic> data = attraction.data() as Map<String, dynamic>;
@@ -453,7 +564,7 @@ class AttractionCard extends StatelessWidget {
     String imagePath = category.toLowerCase() == "museum"
         ? "assets/images/museum.png"
         : "assets/images/attraction.jpg";
-
+    String attractionId = attraction.id;
 
     return GestureDetector(
       onTap: () {
@@ -469,7 +580,7 @@ class AttractionCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10.r)),
               image: DecorationImage(
-                image: AssetImage(imagePath), // 🖼 Dynamic Image
+                image: AssetImage(imagePath),
                 fit: BoxFit.cover,
               ),
             ),
@@ -507,23 +618,35 @@ class AttractionCard extends StatelessWidget {
                 Positioned(
                   top: 10,
                   right: 10,
-                  child: GestureDetector(
-                    onTap: () {
+                  child: FutureBuilder<bool>(
+                    future: isFavorite('attraction_favorites', attractionId),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+                      bool isFav = snapshot.data!;
 
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(5.h),
-                        child: Icon(
-                           Icons.favorite,
-                          color:AppColors.redDark,
+                      return GestureDetector(
+                        onTap: () async {
+                          await saveFavorite('attraction_favorites', attractionId);
+                          // Trigger a rebuild to reflect the updated favorite status
+                          (context as Element).reassemble();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(5.h),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: AppColors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],

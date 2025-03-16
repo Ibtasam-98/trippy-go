@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:trippygo/app/config/app_sized_box.dart';
 import 'package:trippygo/app/widgets/custom_button.dart';
 import '../../config/app_colors.dart';
@@ -9,12 +10,14 @@ import '../../widgets/custom_text.dart';
 
 class AdminHotelBookingDetailScreen extends StatefulWidget {
   final String bookingId;
-  final String bookingType; // "hotel" or "attraction"
+  final String bookingType;
+  bool isComingFromAttractionCard;
 
-  const AdminHotelBookingDetailScreen({
+  AdminHotelBookingDetailScreen({
     Key? key,
     required this.bookingId,
     required this.bookingType,
+    required this.isComingFromAttractionCard,
   }) : super(key: key);
 
   @override
@@ -51,6 +54,13 @@ class _AdminHotelBookingDetailScreenState extends State<AdminHotelBookingDetailS
     Get.snackbar("Success", "Booking status updated to $status", backgroundColor: AppColors.primary, colorText: Colors.white);
   }
 
+  String formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return "N/A";
+    DateTime dateTime = timestamp.toDate();
+    return DateFormat("d MMMM h:mm a").format(dateTime);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,13 +87,16 @@ class _AdminHotelBookingDetailScreenState extends State<AdminHotelBookingDetailS
             _buildCard(
               title: "User Information",
               children: [
-                CustomText(title: "Customer Name: ${bookingData?["fullName"]}", fontSize: 16),
+                CustomText(title: "Customer Name: ${bookingData?["username"]}", fontSize: 16),
                 CustomText(title: "Phone: ${bookingData?["phone"] ?? "N/A"}", fontSize: 16),
                 CustomText(title: "Nationality: ${bookingData?["nationality"] ?? "N/A"}", fontSize: 16),
               ],
             ),
             AppSizedBox.space10h,
-            _buildCard(
+
+            // Conditional UI for Hotel or Attraction Booking
+            widget.bookingType == "hotel"
+                ? _buildCard(
               title: "Hotel Information",
               children: [
                 CustomText(title: "Hotel Name: ${bookingData?["hotelName"] ?? "N/A"}", fontSize: 16),
@@ -93,9 +106,21 @@ class _AdminHotelBookingDetailScreenState extends State<AdminHotelBookingDetailS
                 CustomText(title: "Number of Guests: ${bookingData?["guests"] ?? "N/A"}", fontSize: 16),
                 CustomText(title: "Meal Preference: ${bookingData?["mealPreference"] ?? "N/A"}", fontSize: 16),
               ],
+            )
+                : _buildCard(
+              title: "Attraction Information",
+              children: [
+                CustomText(title: "Attraction Name: ${bookingData?["attractionName"] ?? ""}", fontSize: 16),
+                CustomText(title: "Date: ${formatTimestamp(bookingData?["timestamp"])}", fontSize: 16),
+                CustomText(title: "Check In: ${bookingData?["checkInTime"] ?? ""}", fontSize: 16),
+                CustomText(title: "Number of Guest: ${bookingData?["numberOfGuests"] ?? ""}", fontSize: 16),
+              ],
             ),
             AppSizedBox.space10h,
-            _buildCard(
+
+            widget.isComingFromAttractionCard
+                ? SizedBox()
+                : _buildCard(
               title: "Booking Status",
               children: [
                 CustomText(title: "Status: ${bookingData?["bookingStatus"]}", fontSize: 16, textColor: AppColors.primary),

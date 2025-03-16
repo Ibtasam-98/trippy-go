@@ -12,7 +12,9 @@ import '../../config/app_sized_box.dart';
 import '../../widgets/custom_drawer.dart';
 import '../../widgets/custom_text.dart';
 import '../auth/login_screen.dart';
+import 'admin_attraction_booking_detail_screen.dart';
 import 'admin_hotel_booking_detail_screen.dart';
+import 'admin_view_all_hotel_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   final _advancedDrawerController = AdvancedDrawerController();
@@ -133,15 +135,20 @@ class AdminHomeScreen extends StatelessWidget {
                           textStyle: GoogleFonts.montserrat(),
                           fontWeight: FontWeight.w600,
                         ),
-                        CustomText(
-                          textColor: AppColors.primary,
-                          fontSize: 12.sp,
-                          title: "View All",
-                          maxLines: 2,
-                          textOverflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.start,
-                          textStyle: GoogleFonts.montserrat(),
-                          fontWeight: FontWeight.w400,
+                        InkWell(
+                          onTap: (){
+                            Get.to(AdminViewAllHotelBookingsScreen());
+                          },
+                          child: CustomText(
+                            textColor: AppColors.primary,
+                            fontSize: 14.sp,
+                            title: "View All",
+                            maxLines: 2,
+                            textOverflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.start,
+                            textStyle: GoogleFonts.montserrat(),
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ],
                     ),
@@ -184,6 +191,7 @@ class AdminHomeScreen extends StatelessWidget {
                                   Get.to(() => AdminHotelBookingDetailScreen(
                                     bookingId: booking.id,
                                     bookingType: "hotel",
+                                      isComingFromAttractionCard:false
                                   ));
                                 },
                                 child: Container(
@@ -252,17 +260,116 @@ class AdminHomeScreen extends StatelessWidget {
                           textStyle: GoogleFonts.montserrat(),
                           fontWeight: FontWeight.w600,
                         ),
-                        CustomText(
-                          textColor: AppColors.primary,
-                          fontSize: 12.sp,
-                          title: "View All",
-                          maxLines: 2,
-                          textOverflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.start,
-                          textStyle: GoogleFonts.montserrat(),
-                          fontWeight: FontWeight.w400,
+                        InkWell(
+                          onTap: (){
+                            Get.to(AttractionBookingsScreen());
+                          },
+                          child: CustomText(
+                            textColor: AppColors.primary,
+                            fontSize: 14.sp,
+                            title: "View All",
+                            maxLines: 2,
+                            textOverflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.start,
+                            textStyle: GoogleFonts.montserrat(),
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ],
+                    ),
+                    AppSizedBox.space10h,
+                    StreamBuilder<QuerySnapshot>(
+                      stream: _firestore.collection("booking_Attraction").snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+
+                        var bookings = snapshot.data!.docs;
+
+                        if (bookings.isEmpty) {
+                          return Center(child: CustomText(title: "No Attraction Found", fontSize: 16));
+                        }
+
+                        return SizedBox(
+                          height: 70.h,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: bookings.length,
+                            itemBuilder: (context, index) {
+                              var booking = bookings[index];
+                              var data = booking.data() as Map<String, dynamic>;
+                              String userName = data["username"] ?? "N/A";
+                              String attractionName = data["attractionName"] ?? "N/A";
+
+                              String bookingTime = "N/A";
+                              if (data["timestamp"] != null && data["timestamp"] is Timestamp) {
+                                DateTime dateTime = (data["timestamp"] as Timestamp).toDate();
+                                bookingTime = DateFormat("d MMM h:mm a").format(dateTime); // Example: 8 Mar 5:00 PM
+                              }
+
+                              String firstInitial = userName.isNotEmpty ? userName[0].toUpperCase() : "?";
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Get.to(() => AdminHotelBookingDetailScreen(
+                                    bookingId: booking.id,
+                                    bookingType: "Attraction",
+                                      isComingFromAttractionCard:true
+                                  ));
+                                  print(booking.id);
+                                },
+                                child: Container(
+                                  width: Get.width - 50,
+                                  height: 100.h,
+                                  margin: EdgeInsets.symmetric(horizontal: 8),
+                                  padding: EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: Border.all(color: AppColors.grey, width: 1),
+                                    color: AppColors.white,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Circular avatar with first initial
+                                      CircleAvatar(
+                                        backgroundColor: AppColors.primary,
+                                        radius: 20.r,
+                                        child: CustomText(
+                                          title: firstInitial,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          textColor: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      // Wrapping Column inside Expanded to fix layout issue
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            CustomText(
+                                              title: userName,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              capitalize: true,
+                                            ),
+                                            SizedBox(height: 4),
+                                            CustomText(title: "Attraction: $attractionName", fontSize: 14),
+                                            CustomText(title: "Booking: $bookingTime", fontSize: 12, textColor: AppColors.black),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(Icons.arrow_forward_ios, color: AppColors.black, size: 18),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

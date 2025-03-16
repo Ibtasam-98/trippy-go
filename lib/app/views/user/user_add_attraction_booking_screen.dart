@@ -73,6 +73,15 @@ class UserAddAttractionBookingScreen extends StatelessWidget {
               isPassword: false,
             ),
             AppSizedBox.space10h,
+            CustomTextField(
+              textEditingController: controller.phoneNumberController,
+              label: 'Phone Number',
+              keyboardType: TextInputType.phone,
+              isPassword: false,
+            ),
+            AppSizedBox.space10h,
+            AppSizedBox.space10h,
+
             Row(
               children: [
                 Obx(() => Checkbox(

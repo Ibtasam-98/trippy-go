@@ -22,7 +22,7 @@ class BottomNavigationDashboard extends StatelessWidget {
     UserHomeScreen(),
     UserFavroiteItemScreen(),
     UserBookingScreen(),
-    UserReviewsScreen(),
+    // UserReviewsScreen(),
   ];
 
   @override
@@ -50,7 +50,7 @@ class BottomNavigationDashboard extends StatelessWidget {
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: GNav(
                   gap: 15,
                   activeColor: AppColors.white,  // Active color based on the theme
@@ -95,16 +95,16 @@ class BottomNavigationDashboard extends StatelessWidget {
                       ),
                       text: 'Booking',
                     ),
-                    GButton(
-                      icon: Icons.circle, // Placeholder icon (won't be visible)
-                      iconColor: Colors.transparent, // Hide the icon
-                      leading: Image.asset(
-                        'assets/images/star.png', // Replace with your image
-                        width: 22.w,
-                        height: 22.h,
-                      ),
-                      text: 'Reviews',
-                    ),
+                    // GButton(
+                    //   icon: Icons.circle, // Placeholder icon (won't be visible)
+                    //   iconColor: Colors.transparent, // Hide the icon
+                    //   leading: Image.asset(
+                    //     'assets/images/star.png', // Replace with your image
+                    //     width: 22.w,
+                    //     height: 22.h,
+                    //   ),
+                    //   text: 'Reviews',
+                    // ),
                   ],
                   selectedIndex: controller.currentIndex,
                   onTabChange: (index) {

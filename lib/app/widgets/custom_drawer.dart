@@ -288,25 +288,25 @@ class CustomDrawer extends StatelessWidget {
           ),
         ),
         AppSizedBox.space5h,
-        ListTile(
-          onTap: () {},
-          trailing: Icon(Icons.arrow_forward_ios, size: 10.h,color: AppColors.black,),
-          title: CustomText(
-            textColor: AppColors.black,
-            fontSize: 12.h,
-            title: "Manage Reviews",
-            maxLines: 2,
-            textOverflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.start,
-            textStyle: GoogleFonts.quicksand(),
-          ),
-          leading: Image(
-            image: AssetImage("assets/images/review.png"),
-            height: 20.h,
-            width: 20.w,
-          ),
-        ),
-        AppSizedBox.space5h,
+        // ListTile(
+        //   onTap: () {},
+        //   trailing: Icon(Icons.arrow_forward_ios, size: 10.h,color: AppColors.black,),
+        //   title: CustomText(
+        //     textColor: AppColors.black,
+        //     fontSize: 12.h,
+        //     title: "Manage Reviews",
+        //     maxLines: 2,
+        //     textOverflow: TextOverflow.ellipsis,
+        //     textAlign: TextAlign.start,
+        //     textStyle: GoogleFonts.quicksand(),
+        //   ),
+        //   leading: Image(
+        //     image: AssetImage("assets/images/review.png"),
+        //     height: 20.h,
+        //     width: 20.w,
+        //   ),
+        // ),
+        // AppSizedBox.space5h,
 
       ],
     );

@@ -105,7 +105,7 @@ class _UserViewAllAttractionScreenState extends State<UserViewAllAttractionScree
                   }
 
                   var attractions = snapshot.data!.docs.where((doc) {
-                    var name = doc["spot_name"].toString().toLowerCase();
+                    var name = doc["attraction_name"].toString().toLowerCase();
                     return name.contains(searchQuery);
                   }).toList();
 
@@ -180,7 +180,7 @@ class _UserViewAllAttractionScreenState extends State<UserViewAllAttractionScree
                                     bottom: 10,
                                     left: 10,
                                     child: CustomText(
-                                      title: attraction['spot_name'],
+                                      title: attraction['attraction_name'],
                                       fontSize: 15.sp,
                                       fontWeight: FontWeight.bold,
                                       textColor: AppColors.white,

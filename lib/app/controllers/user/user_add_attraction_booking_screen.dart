@@ -8,6 +8,7 @@ class AttractionBookingController extends GetxController {
   final TextEditingController nationalityController = TextEditingController();
   final TextEditingController checkInTimeController = TextEditingController();
   final TextEditingController numberOfGuestsController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();  // Add this line
   final RxBool additionalService = false.obs;
   final RxBool isLoading = false.obs;
   final RxString username = ''.obs;
@@ -47,6 +48,7 @@ class AttractionBookingController extends GetxController {
         'nationality': nationalityController.text.trim(),
         'checkInTime': checkInTimeController.text.trim(),
         'numberOfGuests': numberOfGuestsController.text.trim(),
+        'phoneNumber': phoneNumberController.text.trim(),  // Add this line
         'additionalService': additionalService.value,
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -93,6 +95,10 @@ class AttractionBookingController extends GetxController {
     }
     if (!RegExp(r'^[0-9]+$').hasMatch(numberOfGuestsController.text)) {
       Get.snackbar("Error", "Number of guests must be digits");
+      return false;
+    }
+    if (!RegExp(r'^[0-9]{10}$').hasMatch(phoneNumberController.text)) {
+      Get.snackbar("Error", "Phone number must be a valid 10-digit number");
       return false;
     }
     return true;

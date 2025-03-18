@@ -1,19 +1,52 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trippygo/app/views/auth/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../config/app_colors.dart';
 import '../../config/app_sized_box.dart';
-import '../../controllers/user/signup_screen_controller.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text.dart';
 import '../../widgets/custom_text_field.dart';
 
+class ForgotPasswordScreen extends StatefulWidget {
+  @override
+  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
+}
 
-class SignUpScreen extends StatelessWidget {
-  final SignUpController signUpController = Get.put(SignUpController());
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  RxBool isLoading = false.obs;
+
+  Future<void> _resetPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    isLoading.value = true;
+    String email = _emailController.text.trim();
+
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password reset link sent to $email")),
+      );
+      Get.off(() => LoginScreen());
+    } on FirebaseAuthException catch (e) {
+      String message = "An error occurred";
+      if (e.code == 'user-not-found') {
+        message = "Email does not exist";
+      } else if (e.code == 'invalid-email') {
+        message = "Invalid email address";
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+
+    isLoading.value = false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +88,7 @@ class SignUpScreen extends StatelessWidget {
                         CustomText(
                           textColor: AppColors.black,
                           fontSize: 16.sp,
-                          title: "Registration",
+                          title: "Forgot Password",
                           fontWeight: FontWeight.w500,
                         ),
                         AppSizedBox.space10h,
@@ -64,31 +97,15 @@ class SignUpScreen extends StatelessWidget {
                           fontSize: 14.sp,
                           textAlign: TextAlign.start,
                           maxLines: 5,
-                          title: "Welcome! Please enter your details to create an account.",
+                          title: "Enter your registered email to reset your password.",
                         ),
                         AppSizedBox.space25h,
                         Form(
-                          key: signUpController.formKey,
+                          key: _formKey,
                           child: Column(
                             children: [
                               CustomTextField(
-                                textEditingController: signUpController.userNameController,
-                                label: "Username",
-                                isPassword: false,
-                                borderColor: AppColors.black.withOpacity(0.1),
-                                icon: Icons.person,
-                                validator: (value) => value!.isEmpty ? "Enter your username" : null,
-                              ),
-                              CustomTextField(
-                                textEditingController: signUpController.contactNumberController,
-                                label: "Contact Number",
-                                icon: Icons.phone,
-                                borderColor: AppColors.black.withOpacity(0.1),
-                                isPassword: false,
-                                validator: (value) => value!.isEmpty ? "Enter your contact number" : null,
-                              ),
-                              CustomTextField(
-                                textEditingController: signUpController.userSignUpEmailController,
+                                textEditingController: _emailController,
                                 label: "Email",
                                 icon: Icons.email,
                                 borderColor: AppColors.black.withOpacity(0.1),
@@ -97,27 +114,20 @@ class SignUpScreen extends StatelessWidget {
                                 validator: (value) =>
                                 value!.isEmpty || !value.contains("@") ? "Enter a valid email" : null,
                               ),
-                              CustomTextField(
-                                textEditingController: signUpController.userSignUpPasswordController,
-                                label: "Password",
-                                icon: Icons.lock,
-                                isPassword: true,
-                                borderColor: AppColors.black.withOpacity(0.1),
-                                validator: (value) =>
-                                value!.length < 6 ? "Password must be at least 6 characters" : null,
-                              ),
                               AppSizedBox.space25h,
                               InkWell(
                                 splashColor: AppColors.transparent,
-                                onTap: () => signUpController.createUserWithEmailAndPassword(context),
+                                onTap: _resetPassword,
                                 child: Obx(
-                                      () => signUpController.isLoading.value
-                                      ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                                      () => isLoading.value
+                                      ? Center(
+                                    child: CircularProgressIndicator(color: AppColors.primary),
+                                  )
                                       : CustomButton(
                                     haveBgColor: true,
                                     borderRadius: 80,
                                     height: 45.h,
-                                    btnTitle: 'Sign Up',
+                                    btnTitle: 'Reset Password',
                                     btnTitleColor: AppColors.white,
                                     bgColor: AppColors.primary,
                                   ),
@@ -138,8 +148,8 @@ class SignUpScreen extends StatelessWidget {
                 highlightColor: AppColors.transparent,
                 splashColor: AppColors.transparent,
                 onTap: () => Get.to(LoginScreen()),
-                child:  CustomText(
-                  firstText: "Already have an account?",
+                child: CustomText(
+                  firstText: "Remembered your password?",
                   secondText: " Login here",
                   firstTextColor: AppColors.black,
                   secondTextColor: AppColors.primary,

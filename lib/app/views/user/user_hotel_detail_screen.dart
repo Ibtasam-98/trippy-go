@@ -8,19 +8,22 @@ import 'package:get/get.dart';
 import 'package:trippygo/app/views/user/user_add_hotel_review_screen.dart';
 import 'package:trippygo/app/views/user/user_hotel_booking_screen.dart';
 import '../../widgets/custom_text.dart';
-import '../../widgets/custom_button.dart'; // Assuming CustomButton is already defined
-
+import '../../widgets/custom_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserHotelDetailScreen extends StatelessWidget {
   final Map<String, dynamic> hotel;
-  final String hotelID, hotelName;
+  final String hotelID, hotelName, imagePath; // Add imagePath here
 
-  UserHotelDetailScreen({required this.hotel, required this.hotelID, required this.hotelName});
+  UserHotelDetailScreen({
+    required this.hotel,
+    required this.hotelID,
+    required this.hotelName,
+    required this.imagePath, // Add imagePath here
+  });
 
   @override
   Widget build(BuildContext context) {
-    // ValueNotifier to track the expanded state for each section
     ValueNotifier<bool> descriptionExpanded = ValueNotifier(false);
     ValueNotifier<bool> amenitiesExpanded = ValueNotifier(false);
     ValueNotifier<bool> reviewsExpanded = ValueNotifier(false);
@@ -33,20 +36,18 @@ class UserHotelDetailScreen extends StatelessWidget {
           children: [
             Stack(
               children: [
-                // Hotel Image with Rounded Corners
                 ClipRRect(
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(25.r),
                     bottomRight: Radius.circular(25.r),
                   ),
                   child: Image.asset(
-                    "assets/images/hotel_placeholder.jpg",
+                    imagePath, // Use imagePath here
                     width: double.infinity,
                     height: 200.h,
                     fit: BoxFit.cover,
                   ),
                 ),
-
                 Positioned(
                   top: 30.h,
                   left: 20.w,
@@ -57,13 +58,12 @@ class UserHotelDetailScreen extends StatelessWidget {
                       size: 20.sp,
                     ),
                     onPressed: () {
-                      Navigator.pop(context); // Navigate back
+                      Navigator.pop(context);
                     },
                   ),
                 ),
               ],
             ),
-
             AppSizedBox.space10h,
             Padding(
               padding: EdgeInsets.only(left: 15.w, right: 15.w),
@@ -101,7 +101,6 @@ class UserHotelDetailScreen extends StatelessWidget {
                     ],
                   ),
                   Divider(thickness: 0.1, color: AppColors.black),
-
                   _buildExpansionTile(
                     title: "Description",
                     content: Padding(
@@ -120,7 +119,6 @@ class UserHotelDetailScreen extends StatelessWidget {
                     ),
                     expansionNotifier: descriptionExpanded,
                   ),
-
                   _buildExpansionTile(
                     title: "Amenities",
                     content: Wrap(
@@ -141,14 +139,12 @@ class UserHotelDetailScreen extends StatelessWidget {
                     ),
                     expansionNotifier: amenitiesExpanded,
                   ),
-
-                  // Fetch Reviews from Firestore
                   _buildExpansionTile(
                     title: "Reviews",
                     content: FutureBuilder<QuerySnapshot>(
                       future: FirebaseFirestore.instance
                           .collection('hotel_reviews')
-                          .where('hotelId', isEqualTo: hotelID) // Ensure hotel['id'] is correct here
+                          .where('hotelId', isEqualTo: hotelID)
                           .get(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -157,7 +153,7 @@ class UserHotelDetailScreen extends StatelessWidget {
                           return Center(child: Text('Error: ${snapshot.error}'));
                         } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                           return Padding(
-                            padding: EdgeInsets.only(top:8.h,bottom: 8.h),
+                            padding: EdgeInsets.only(top: 8.h, bottom: 8.h),
                             child: CustomText(
                               title: "No reviews available yet",
                               fontSize: 14.sp,
@@ -166,29 +162,23 @@ class UserHotelDetailScreen extends StatelessWidget {
                             ),
                           );
                         }
-
-                        // Process reviews and display
                         var reviews = snapshot.data!.docs.map((doc) {
                           final timestamp = doc['timestamp'];
                           final username = doc['username'];
-
                           DateTime? reviewTime = timestamp != null && timestamp is Timestamp
                               ? timestamp.toDate()
                               : null;
-
                           return {
                             'review': doc['review'] as String,
                             'username': username as String?,
                             'timestamp': reviewTime,
                           };
                         }).toList();
-
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: reviews.asMap().entries.map<Widget>((entry) {
                             int index = entry.key;
                             var review = entry.value;
-
                             String formattedTime = "";
                             if (review['timestamp'] != null) {
                               DateTime reviewTimestamp = review['timestamp'] as DateTime;
@@ -197,11 +187,9 @@ class UserHotelDetailScreen extends StatelessWidget {
                             } else {
                               formattedTime = "N/A";
                             }
-
                             String userInitial = (review['username'] as String?)?.isNotEmpty == true
                                 ? (review['username'] as String)[0].toUpperCase()
                                 : "U";
-
                             return Padding(
                               padding: EdgeInsets.symmetric(vertical: 5.h),
                               child: Container(
@@ -238,7 +226,7 @@ class UserHotelDetailScreen extends StatelessWidget {
                                           title: formattedTime,
                                           fontSize: 12.sp,
                                           textStyle: TextStyle(
-                                            fontStyle: FontStyle.italic,
+                                            fontStyle:FontStyle.italic,
                                           ),
                                           textColor: AppColors.black.withOpacity(0.5),
                                           fontWeight: FontWeight.w300,
@@ -255,8 +243,6 @@ class UserHotelDetailScreen extends StatelessWidget {
                     ),
                     expansionNotifier: reviewsExpanded,
                   )
-
-
                 ],
               ),
             ),
@@ -272,7 +258,7 @@ class UserHotelDetailScreen extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () {
-                    Get.to(UserAddHotelReviewScreen(hotelId:hotelID));
+                    Get.to(UserAddHotelReviewScreen(hotelId: hotelID));
                   },
                   child: CustomButton(
                     haveBgColor: true,
@@ -331,9 +317,7 @@ class UserHotelDetailScreen extends StatelessWidget {
                 textAlign: TextAlign.start,
               ),
               trailing: Image.asset(
-                isExpanded
-                    ? "assets/images/minus.png"
-                    : "assets/images/add.png",
+                isExpanded ? "assets/images/minus.png" : "assets/images/add.png",
                 width: 20.w,
                 height: 20.h,
               ),

@@ -13,11 +13,11 @@ class AdminAttractionController extends GetxController {
   final entryFeeController = TextEditingController();
   final openingHoursController = TextEditingController();
 
-  final selectedCategory = "".obs;
-  final selectedParking = "".obs;
-  final selectedPublicTransport = "".obs;
-  final selectedWheelchair = "".obs;
-  final selectedSeason = "".obs;
+  final selectedCategory = RxnString(); // Use RxnString for nullable String
+  final selectedParking = RxnString();
+  final selectedPublicTransport = RxnString();
+  final selectedWheelchair = RxnString();
+  final selectedSeason = RxnString();
 
   var isLoading = false.obs;
 
@@ -29,11 +29,11 @@ class AdminAttractionController extends GetxController {
       entryFeeController.text = attraction['entry_fee'] ?? "";
       openingHoursController.text = attraction['opening_hours'] ?? "";
 
-      selectedCategory.value = attraction['category'] ?? "";
-      selectedParking.value = attraction['parking'] ?? "";
-      selectedPublicTransport.value = attraction['public_transport'] ?? "";
-      selectedWheelchair.value = attraction['wheelchair_access'] ?? "";
-      selectedSeason.value = attraction['best_season'] ?? "";
+      selectedCategory.value = attraction['category'];
+      selectedParking.value = attraction['parking'];
+      selectedPublicTransport.value = attraction['public_transport'];
+      selectedWheelchair.value = attraction['wheelchair_access'];
+      selectedSeason.value = attraction['best_season'];
     }
   }
 
@@ -65,16 +65,15 @@ class AdminAttractionController extends GetxController {
     return null;
   }
 
-
   Future<void> saveOrUpdateAttraction(BuildContext context, dynamic attraction) async {
     if (!formKey.currentState!.validate()) {
       return;
     }
-    if (selectedCategory.value.isEmpty ||
-        selectedParking.value.isEmpty ||
-        selectedPublicTransport.value.isEmpty ||
-        selectedWheelchair.value.isEmpty ||
-        selectedSeason.value.isEmpty) {
+    if (selectedCategory.value == null ||
+        selectedParking.value == null ||
+        selectedPublicTransport.value == null ||
+        selectedWheelchair.value == null ||
+        selectedSeason.value == null) {
       _showSnackbar(context, "Error", "Please select all dropdown fields!", ContentType.failure);
       return;
     }
@@ -142,6 +141,19 @@ class AdminAttractionController extends GetxController {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(snackBar);
+  }
+
+  void resetForm() {
+    attractionNameController.clear();
+    descriptionController.clear();
+    cityController.clear();
+    openingHoursController.clear();
+    entryFeeController.clear();
+    selectedCategory.value = null;
+    selectedParking.value = null;
+    selectedPublicTransport.value = null;
+    selectedWheelchair.value = null;
+    selectedSeason.value = null;
   }
 
   @override

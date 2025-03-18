@@ -18,21 +18,20 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
   TextEditingController searchController = TextEditingController();
   String searchQuery = "";
 
-
   String _getCategoryImage(String category) {
     switch (category.toLowerCase()) {
       case "museum":
-        return "assets/images/museum.png";
+        return ["assets/images/meuseum1.jpeg", "assets/images/meusum2.jpeg"].elementAt(DateTime.now().millisecond % 2);
       case "beach":
-        return "assets/images/attraction.jpg";
+        return ["assets/images/adventure1.jpeg", "assets/images/adventure2.jpeg", "assets/images/advencture3.jpeg"].elementAt(DateTime.now().millisecond % 3);
       case "park":
-        return "assets/images/park.jpg";
+        return ["assets/images/park1.jpeg", "assets/images/park2.jpeg", "assets/images/park3.jpeg", "assets/images/park4.jpeg"].elementAt(DateTime.now().millisecond % 4);
       case "mountain":
-        return "assets/images/mountain.jpg";
+        return ["assets/images/adventure1.jpeg", "assets/images/adventure2.jpeg", "assets/images/advencture3.jpeg"].elementAt(DateTime.now().millisecond % 3);
       case "historic":
-        return "assets/images/museum.png";
+        return ["assets/images/meuseum1.jpeg", "assets/images/meusum2.jpeg"].elementAt(DateTime.now().millisecond % 2);
       default:
-        return "assets/images/attraction.jpg"; 
+        return ["assets/images/adventure1.jpeg", "assets/images/adventure2.jpeg", "assets/images/advencture3.jpeg"].elementAt(DateTime.now().millisecond % 3);
     }
   }
 
@@ -65,7 +64,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔍 Search Bar
             CustomTextField(
               label: "Search Attraction",
               isPassword: false,
@@ -83,10 +81,7 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                 });
               },
             ),
-
             SizedBox(height: 10),
-
-            // 🏞️ Grid View of Attractions
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('attractions').snapshots(),
@@ -94,7 +89,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
-
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(
                       child: CustomText(
@@ -105,8 +99,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                       ),
                     );
                   }
-
-                  // 🔍 Filter attractions based on search query
                   var attractions = snapshot.data!.docs.where((doc) {
                     var name = doc["attraction_name"].toString().toLowerCase();
                     return name.contains(searchQuery);
@@ -115,7 +107,7 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                   return GridView.builder(
                     padding: EdgeInsets.all(10),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // 2 items per row
+                      crossAxisCount: 2,
                       crossAxisSpacing: 6,
                       mainAxisSpacing: 6,
                       childAspectRatio: 0.9,
@@ -124,11 +116,12 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                     itemBuilder: (context, index) {
                       var attraction = attractions[index];
                       String category = attraction['category'] ?? "Uncategorized";
-                      String imagePath = _getCategoryImage(category); // Get category-specific image
+                      String imagePath = _getCategoryImage(category);
 
                       return GestureDetector(
                         onTap: () {
-                          Get.to(AdminAttractionDetailScreen(attraction: attraction));
+                          Get.to(AdminAttractionDetailScreen(attraction: attraction, imagePath: imagePath));
+
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,13 +132,12 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(10.r)),
                                 image: DecorationImage(
-                                  image: AssetImage(imagePath), // 🖼 Dynamic category image
+                                  image: AssetImage(imagePath),
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               child: Stack(
                                 children: [
-                                  // Gradient Overlay
                                   Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.all(Radius.circular(10.r)),
@@ -159,8 +151,6 @@ class _AdminManageAttractionScreenState extends State<AdminManageAttractionScree
                                       ),
                                     ),
                                   ),
-
-                                  // Category (Top Right)
                                   Positioned(
                                     top: 10,
                                     right: 10,

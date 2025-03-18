@@ -11,14 +11,16 @@ import 'admin_add_hotel_screen.dart';
 
 class AdminHotelDetailScreen extends StatefulWidget {
   final QueryDocumentSnapshot hotel;
-  AdminHotelDetailScreen({required this.hotel});
+  final String imagePath; // Added imagePath parameter
+
+  AdminHotelDetailScreen({required this.hotel, required this.imagePath});
 
   @override
   _AdminHotelDetailScreenState createState() => _AdminHotelDetailScreenState();
 }
 
 class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
-  String? expandedTile; // Stores the currently expanded tile
+  String? expandedTile;
 
   @override
   Widget build(BuildContext context) {
@@ -32,21 +34,18 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
           children: [
             Stack(
               children: [
-                // Hotel Image with Rounded Corners
                 ClipRRect(
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(20.r),
                     bottomRight: Radius.circular(20.r),
                   ),
                   child: Image(
-                    image: AssetImage("assets/images/hotel_placeholder.jpg"),
+                    image: AssetImage(widget.imagePath), // Use provided image path
                     fit: BoxFit.fill,
                     height: 200.h,
                     width: double.infinity,
                   ),
                 ),
-
-                // Back Button Positioned
                 Positioned(
                   top: 40.h,
                   left: 15.w,
@@ -61,13 +60,11 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                 ),
               ],
             ),
-
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Hotel Name & Category
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +95,7 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                       ),
                     ],
                   ),
-                  Divider(thickness: 0.1,color: AppColors.black,),
+                  Divider(thickness: 0.1, color: AppColors.black),
                   _buildExpansionTile(
                     title: "Amenities",
                     content: Wrap(
@@ -118,7 +115,6 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                           .toList(),
                     ),
                   ),
-
                   _buildExpansionTile(
                     title: "Description",
                     content: Padding(
@@ -136,7 +132,6 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                       ),
                     ),
                   ),
-
                   _buildExpansionTile(
                     title: "Reviews",
                     content: Padding(
@@ -160,10 +155,11 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Expanded(
-                              child:InkWell(
-                                onTap: (){
-                                  _confirmDelete();
-                                },child: CustomButton(
+                            child: InkWell(
+                              onTap: () {
+                                _confirmDelete();
+                              },
+                              child: CustomButton(
                                 haveBgColor: true,
                                 btnTitle: "Delete",
                                 height: 45.h,
@@ -171,14 +167,15 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                                 bgColor: AppColors.redDark,
                                 borderRadius: 45.r,
                               ),
-                              )
+                            ),
                           ),
                           AppSizedBox.space10w,
                           Expanded(
-                              child:InkWell(
-                                onTap: (){
-                                  Get.to(() => AddHotelScreen(hotel: widget.hotel));
-                                },child: CustomButton(
+                            child: InkWell(
+                              onTap: () {
+                                Get.to(() => AddHotelScreen(hotel: widget.hotel));
+                              },
+                              child: CustomButton(
                                 haveBgColor: true,
                                 btnTitle: "Edit",
                                 height: 45.h,
@@ -186,7 +183,7 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
                                 bgColor: AppColors.blue,
                                 borderRadius: 45.r,
                               ),
-                              )
+                            ),
                           )
                         ],
                       ),
@@ -200,6 +197,7 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
       ),
     );
   }
+
   void _confirmDelete() {
     Get.defaultDialog(
       backgroundColor: AppColors.white,
@@ -224,8 +222,8 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
               .doc(widget.hotel.id)
               .delete();
 
-          Get.back(); // Close dialog
-          Get.back(); // Go back to the previous screen
+          Get.back();
+          Get.back();
 
           final snackBar = SnackBar(
             elevation: 0,
@@ -240,7 +238,6 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(snackBar);
-
         } catch (e) {
           final snackBar = SnackBar(
             elevation: 0,
@@ -260,7 +257,6 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
     );
   }
 
-
   Widget _buildExpansionTile({required String title, required Widget content}) {
     bool isExpanded = expandedTile == title;
 
@@ -278,20 +274,18 @@ class _AdminHotelDetailScreenState extends State<AdminHotelDetailScreen> {
             textAlign: TextAlign.start,
           ),
           trailing: Image.asset(
-            isExpanded
-                ? "assets/images/minus.png"
-                : "assets/images/add.png",
+            isExpanded ? "assets/images/minus.png" : "assets/images/add.png",
             width: 20.w,
             height: 20.h,
           ),
           onExpansionChanged: (expanded) {
             setState(() {
-              expandedTile = expanded ? title : null; // Collapse others when one is opened
+              expandedTile = expanded ? title : null;
             });
           },
           children: [content],
         ),
-        if (!isExpanded) _buildDivider(), // Show divider only when collapsed
+        if (!isExpanded) _buildDivider(),
       ],
     );
   }

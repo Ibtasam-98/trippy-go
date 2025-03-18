@@ -10,6 +10,7 @@ import '../../config/app_sized_box.dart';
 import '../../controllers/user/login_screen_controller.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
+import 'forgot_password.dart';
 
 class LoginScreen extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -89,12 +90,17 @@ class LoginScreen extends StatelessWidget {
                           AppSizedBox.space5h,
                           Align(
                             alignment: Alignment.centerRight,
-                            child: CustomText(
-                              fontSize: 12.sp,
-                              title: "Forgot Password?",
-                              textColor: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                              textStyle: GoogleFonts.montserrat(),
+                            child: InkWell(
+                              onTap: (){
+                                Get.to(ForgotPasswordScreen());
+                              },
+                              child: CustomText(
+                                fontSize: 12.sp,
+                                title: "Forgot Password?",
+                                textColor: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                                textStyle: GoogleFonts.montserrat(),
+                              ),
                             ),
                           ),
                           AppSizedBox.space15h,

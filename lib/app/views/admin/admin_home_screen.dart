@@ -14,7 +14,7 @@ import '../../widgets/custom_text.dart';
 import '../auth/login_screen.dart';
 import 'admin_attraction_booking_detail_screen.dart';
 import 'admin_hotel_booking_detail_screen.dart';
-import 'admin_view_all_hotel_screen.dart';
+import 'admin_view_all_hotel_booking_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   final _advancedDrawerController = AdvancedDrawerController();

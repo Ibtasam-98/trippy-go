@@ -13,8 +13,9 @@ import '../../widgets/custom_text.dart';
 
 class UserAttractionDetailScreen extends StatefulWidget {
   final QueryDocumentSnapshot attraction;
+  final String imagePath; // Add imagePath here
 
-  UserAttractionDetailScreen({required this.attraction});
+  UserAttractionDetailScreen({required this.attraction, required this.imagePath}); // Add imagePath here
 
   @override
   _UserAttractionDetailScreenState createState() =>
@@ -57,7 +58,7 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
                     bottomRight: Radius.circular(20.r),
                   ),
                   child: Image(
-                    image: AssetImage("assets/images/attraction.jpg"),
+                    image: AssetImage(widget.imagePath), // Use imagePath here
                     fit: BoxFit.cover,
                     height: 200.h,
                     width: double.infinity,
@@ -237,8 +238,7 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
                                               (index) => Icon(
                                             index < review['rating']
                                                 ? Icons.star
-                                                : Icons.star_border,
-                                            color: AppColors.primary,
+                                                : Icons.star_border,color: AppColors.primary,
                                             size: 14.sp,
                                           ),
                                         ),
@@ -334,8 +334,7 @@ class _UserAttractionDetailScreenState extends State<UserAttractionDetailScreen>
     );
   }
 
-
-  // ExpansionTile builder
+// ExpansionTile builder
   Widget _buildExpansionTile({required String title, required Widget content}) {
     bool isExpanded = expandedTile == title;
 

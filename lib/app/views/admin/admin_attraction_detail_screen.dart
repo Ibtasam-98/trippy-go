@@ -11,8 +11,9 @@ import 'admin_add_attraction_screen.dart';
 
 class AdminAttractionDetailScreen extends StatefulWidget {
   final QueryDocumentSnapshot attraction;
+  final String imagePath; // Add imagePath here
 
-  AdminAttractionDetailScreen({required this.attraction});
+  AdminAttractionDetailScreen({required this.attraction, required this.imagePath}); // Add imagePath here
 
   @override
   _AdminAttractionDetailScreenState createState() => _AdminAttractionDetailScreenState();
@@ -45,21 +46,18 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
           children: [
             Stack(
               children: [
-                // 🖼 Attraction Image with Rounded Corners
                 ClipRRect(
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(20.r),
                     bottomRight: Radius.circular(20.r),
                   ),
                   child: Image(
-                    image: AssetImage("assets/images/attraction.jpg"),
+                    image: AssetImage(widget.imagePath), // Use imagePath here
                     fit: BoxFit.cover,
                     height: 200.h,
                     width: double.infinity,
                   ),
                 ),
-
-                // 🔙 Back Button
                 Positioned(
                   top: 40.h,
                   left: 15.w,
@@ -74,13 +72,11 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
                 ),
               ],
             ),
-
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 📌 Attraction Name & Category
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,8 +108,6 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
                     ],
                   ),
                   Divider(thickness: 0.1, color: AppColors.black),
-
-                  // 📌 Amenities Section (Now Includes Parking, Wheelchair, etc.)
                   _buildExpansionTile(
                     title: "Amenities",
                     content: Wrap(
@@ -132,7 +126,6 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
                       }).toList(),
                     ),
                   ),
-
                   _buildExpansionTile(
                     title: "Description",
                     content: Padding(
@@ -150,7 +143,6 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
                       ),
                     ),
                   ),
-
                   _buildExpansionTile(
                     title: "Reviews",
                     content: Padding(
@@ -166,7 +158,6 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
                       ),
                     ),
                   ),
-
                   _buildExpansionTile(
                     title: "Actions",
                     content: Padding(
@@ -240,8 +231,8 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
               .doc(widget.attraction.id)
               .delete();
 
-          Get.back(); // Close dialog
-          Get.back(); // Go back to the previous screen
+          Get.back();
+          Get.back();
 
           final snackBar = SnackBar(
             elevation: 0,
@@ -256,7 +247,6 @@ class _AdminAttractionDetailScreenState extends State<AdminAttractionDetailScree
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(snackBar);
-
         } catch (e) {
           final snackBar = SnackBar(
             elevation: 0,

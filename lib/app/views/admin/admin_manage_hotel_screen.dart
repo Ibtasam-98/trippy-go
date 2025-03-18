@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:trippygo/app/views/admin/admin_add_hotel_screen.dart';
 import '../../config/app_colors.dart';
 import '../../config/app_sized_box.dart';
@@ -19,13 +18,22 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
   TextEditingController searchController = TextEditingController();
   String searchQuery = "";
 
+  List<String> hotelImagePaths = [
+    "assets/images/hotel1.jpg",
+    "assets/images/hotel2.jpg",
+    "assets/images/hotel3.jpg",
+    "assets/images/hotel4.jpg",
+    "assets/images/hotel5.jpg",
+    "assets/images/hotel6.jpg",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.white,
-        surfaceTintColor: AppColors.transparent,
+        surfaceTintColor: Colors.transparent,
         title: Align(
           alignment: Alignment.topLeft,
           child: CustomText(
@@ -57,8 +65,8 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
               fillColor: Colors.white,
               borderColor: AppColors.black.withOpacity(0.1),
               borderRadius: 8.0,
-              hintFontSize: 14.0, // Adjust hint size if needed
-              prefixIconSize: 20.0, // Adjust icon size if needed
+              hintFontSize: 14.0,
+              prefixIconSize: 20.0,
               keyboardType: TextInputType.text,
               icon: Icons.search,
               onChanged: (value) {
@@ -67,7 +75,6 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
                 });
               },
             ),
-
             AppSizedBox.space10h,
             CustomText(
               title: "Our Hotel",
@@ -75,7 +82,6 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
               fontWeight: FontWeight.bold,
               fontFamily: 'grenda',
             ),
-
             Expanded(
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
@@ -93,8 +99,6 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
                   }
 
                   var hotels = snapshot.data!.docs;
-
-                  // Filter hotels based on search query
                   var filteredHotels = hotels.where((hotel) {
                     String hotelName = hotel['name'].toString().toLowerCase();
                     return hotelName.contains(searchQuery);
@@ -112,7 +116,10 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
                       var hotel = filteredHotels[index];
                       return GestureDetector(
                         onTap: () {
-                           Get.to(AdminHotelDetailScreen(hotel: hotel));
+                          Get.to(
+                              AdminHotelDetailScreen(
+                                  imagePath: hotelImagePaths[index % hotelImagePaths.length],
+                                  hotel: hotel));
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +130,7 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(10.r)),
                                 image: DecorationImage(
-                                  image: AssetImage("assets/images/hotel_placeholder.jpg"),
+                                  image: AssetImage(hotelImagePaths[index % hotelImagePaths.length]), // Use unique image
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -166,8 +173,8 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
                                     ),
                                   ),
                                   Positioned(
-                                    bottom:10,
-                                    left:10,
+                                    bottom: 10,
+                                    left: 10,
                                     child: CustomText(
                                       title: hotel['name'],
                                       fontSize: 15.sp,
@@ -180,7 +187,6 @@ class _AdminManageHotelScreenState extends State<AdminManageHotelScreen> {
                                 ],
                               ),
                             ),
-
                           ],
                         ),
                       );

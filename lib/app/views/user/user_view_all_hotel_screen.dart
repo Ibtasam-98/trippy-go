@@ -18,6 +18,15 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
   TextEditingController searchController = TextEditingController();
   String searchQuery = "";
 
+  List<String> hotelImagePaths = [
+    "assets/images/hotel1.jpg",
+    "assets/images/hotel2.jpg",
+    "assets/images/hotel3.jpg",
+    "assets/images/hotel4.jpg",
+    "assets/images/hotel5.jpg",
+    "assets/images/hotel6.jpg",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,8 +65,8 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
               fillColor: Colors.white,
               borderColor: AppColors.black.withOpacity(0.1),
               borderRadius: 8.0,
-              hintFontSize: 14.0, // Adjust hint size if needed
-              prefixIconSize: 20.0, // Adjust icon size if needed
+              hintFontSize: 14.0,
+              prefixIconSize: 20.0,
               keyboardType: TextInputType.text,
               icon: Icons.search,
               onChanged: (value) {
@@ -66,7 +75,6 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                 });
               },
             ),
-
             AppSizedBox.space10h,
             CustomText(
               title: "Our Hotel",
@@ -74,7 +82,6 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
               fontWeight: FontWeight.bold,
               fontFamily: 'grenda',
             ),
-
             Expanded(
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
@@ -92,8 +99,6 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                   }
 
                   var hotels = snapshot.data!.docs;
-
-                  // Filter hotels based on search query
                   var filteredHotels = hotels.where((hotel) {
                     String hotelName = hotel['name'].toString().toLowerCase();
                     return hotelName.contains(searchQuery);
@@ -118,6 +123,7 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                                 hotel: hotel.data() as Map<String, dynamic>,
                                 hotelID: hotel.id.toString(),
                                 hotelName: hotel['name'],
+                                  imagePath: hotelImagePaths[index % hotelImagePaths.length]
                               ),
                             ),
                           );
@@ -131,7 +137,7 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(10.r)),
                                 image: DecorationImage(
-                                  image: AssetImage("assets/images/hotel_placeholder.jpg"),
+                                  image: AssetImage(hotelImagePaths[index % hotelImagePaths.length]),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -174,8 +180,8 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                                     ),
                                   ),
                                   Positioned(
-                                    bottom:10,
-                                    left:10,
+                                    bottom: 10,
+                                    left: 10,
                                     child: CustomText(
                                       title: hotel['name'],
                                       fontSize: 15.sp,
@@ -188,7 +194,6 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
                                 ],
                               ),
                             ),
-
                           ],
                         ),
                       );
@@ -201,6 +206,5 @@ class _UserViewAllHotelScreenState extends State<UserViewAllHotelScreen> {
         ),
       ),
     );
-
   }
 }

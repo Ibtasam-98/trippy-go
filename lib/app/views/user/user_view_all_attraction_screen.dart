@@ -125,7 +125,7 @@ class _UserViewAllAttractionScreenState extends State<UserViewAllAttractionScree
 
                       return GestureDetector(
                         onTap: () {
-                          Get.to(UserAttractionDetailScreen(attraction: attraction));
+                          Get.to(() => UserAttractionDetailScreen(attraction: attraction, imagePath: imagePath));
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

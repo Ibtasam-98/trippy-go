@@ -9,7 +9,7 @@ import '../config/app_sized_box.dart';
 class CustomButton extends StatelessWidget {
   final String btnTitle;
   final Color btnTitleColor;
-  final Color? btnBorderColor; // Made optional
+  final Color? btnBorderColor;
   final Color bgColor;
   final bool haveBgColor;
   final bool useGradient;
@@ -18,13 +18,13 @@ class CustomButton extends StatelessWidget {
   final IconData? icon;
   final Color? iconColor;
   final double? iconSize;
-  final double? height; // Optional height
+  final double? height;
 
   const CustomButton({super.key,
     required this.haveBgColor,
     required this.btnTitle,
     required this.btnTitleColor,
-    this.btnBorderColor, // Optional parameter
+    this.btnBorderColor,
     required this.bgColor,
     this.icon,
     this.iconColor,
@@ -32,27 +32,27 @@ class CustomButton extends StatelessWidget {
     this.gradient,
     this.useGradient = true,
     required this.borderRadius,
-    this.height, // Optional height parameter
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height ?? 60.h, // Set default height if not provided (60.h as an example)
+      height: height ?? 60.h,
       decoration: BoxDecoration(
         color: haveBgColor ? bgColor : null,
         gradient: useGradient && gradient != null ? gradient : null,
         border: Border.all(
-          color: btnBorderColor ?? Colors.transparent, // Default to transparent if not provided
+          color: btnBorderColor ?? Colors.transparent,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 13.w), // Adjust padding for more vertical space
+          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 13.w),
           child: Row(
             mainAxisAlignment: icon == null ? MainAxisAlignment.center : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center, // Ensure vertical centering
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AppSizedBox.space10w,
               CustomText(

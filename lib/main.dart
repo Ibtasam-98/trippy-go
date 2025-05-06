@@ -10,16 +10,11 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   try {
-    print("Initializing GetStorage...");
     await GetStorage.init();
-    print("GetStorage initialized successfully.");
-    print("Initializing Firebase...");
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print("Firebase initialized successfully.");
   } catch (e) {
     print("Error during initialization: $e");
   }
@@ -30,14 +25,11 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    print("Building MyApp...");
-
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        print("Initializing GetMaterialApp...");
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           home: child,

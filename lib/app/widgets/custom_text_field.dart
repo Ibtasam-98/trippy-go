@@ -15,7 +15,7 @@ class CustomTextField extends StatefulWidget {
   final double? borderRadius;
   final double? prefixIconSize;
   final double? hintFontSize;
-  final EdgeInsetsGeometry? contentPadding; // NEW PARAMETER
+  final EdgeInsetsGeometry? contentPadding;
   final ValueChanged<String>? onChanged;
   final FocusNode? focusNode;
 
@@ -33,7 +33,7 @@ class CustomTextField extends StatefulWidget {
     this.borderRadius,
     this.prefixIconSize,
     this.hintFontSize,
-    this.contentPadding, // Add new parameter
+    this.contentPadding,
     this.onChanged,
     this.focusNode,
   });
@@ -80,7 +80,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             filled: widget.fillColor != null,
             fillColor: widget.fillColor ?? Colors.transparent,
             hintText: widget.label,
-            contentPadding: widget.contentPadding ?? EdgeInsets.all(10.h), // Uses the new parameter
+            contentPadding: widget.contentPadding ?? EdgeInsets.all(10.h),
             hintStyle: GoogleFonts.quicksand(
               fontSize: widget.hintFontSize ?? 10.h,
               color: Colors.black,

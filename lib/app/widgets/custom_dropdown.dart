@@ -5,13 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../config/app_colors.dart';
 class CustomDropdown extends StatelessWidget {
-  final String hint; // Updated from title to hint
+  final String hint;
   final List<String> items;
   final RxString selectedValue;
 
   const CustomDropdown({
     super.key,
-    required this.hint, // Changed parameter name to hint
+    required this.hint,
     required this.items,
     required this.selectedValue,
   });
